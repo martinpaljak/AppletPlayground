@@ -50,6 +50,7 @@ The following changes have been applied to source code of applets:
  * More applets:
    * ykneo-oath - https://github.com/Yubico/ykneo-oath/ (GPL)
    * BTChipApplet - https://github.com/btchip/btchipJC (AGPL3) <sub>Depends on JavaCard 3 support</sub>
+   * EstEID - Estonian ID-card compatible applet (BSD)
    * If you want to see more applets in the build set, file an issue with link!
  * More flexible build (Grails?)
 

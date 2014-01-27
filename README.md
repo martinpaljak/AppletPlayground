@@ -41,6 +41,7 @@ The following changes have been applied to source code of applets:
  * Import this project into Git and execute the "toys" ANT target
  * Ore use command line and issue "ant clean toys"
  * Use the included GlobalPlatform utility to load applets to card
+
 ## In the pipeline:
  * JavaCard 3.X support
  * Code hardening with http://sourceforge.net/projects/cesta/ (BSD)

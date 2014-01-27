@@ -26,7 +26,7 @@ The following changes have been applied to source code of applets:
 ## What you need ?
  * Unix-like operating system like a recent Linux or OS X with installed JDK
  * A working smart card reader* with a driver - preferably a [well-behaving CCID one](http://pcsclite.alioth.debian.org/ccid/section.html)
- * A JavaCard 2.2.2 card*
+ * A JavaCard 2.2.2 card* *TODO*: a list of webshops selling compatible JavaCard-s
  * Eclipse - get from [eclipse.org](http://eclipse.org/downloads/)
 
 \* you can work with source code without a card and reader, but for actual testing having one is preferable.
@@ -56,4 +56,5 @@ The following changes have been applied to source code of applets:
 
 ## Contact
  * martin@martinpaljak.net
- * For improvements file an issue!
+ * For improvements file an issue. Better yet - a pull request!
+ * General chat at [OpenKMS Google forum](https://groups.google.com/forum/#!forum/openkms)

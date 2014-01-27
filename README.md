@@ -21,7 +21,7 @@ The following changes have been applied to source code of applets:
  * code formatting
 
 # FEASIBILITY NOTICE
- The above applets and the overall package come "as-is". I make no claims about the feasibility, usability, security, correctness whatsoever of the whole package or any of the components. Use at your own risk. 
+ The above applets and the overall package come "as-is". I make no claims about the feasibility, usability, security, correctness whatsoever of the whole package or any of the components. Use at your own risk. Everything here is only for educational purposes.
 
 ## What you need ?
  * Unix-like operating system like a recent Linux or OS X

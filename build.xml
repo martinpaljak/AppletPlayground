@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="toys" name="pro.javacard.applets build">
+  <property name="PACKAGE_NAME" value="pro.javacard.applets"/>
+  <!-- Applet building dependencies -->
+  <property name="JAVACARD_HOME" value="ext/java_card_kit-2_2_2"/>
+  <property name="OPENPLATFORM_HOME" value="ext/visa_openplatform-2_0"/>
+  <property name="API_EXPORT_FILES" value="${JAVACARD_HOME}/api_export_files"/>
+  <!-- Target for building the helloworld applet -->
+  <!-- Modify for your own needs -->
+  <target name="hello" depends="compile_sources">
+    <!-- Build the HelloWorld  -->
+    <antcall target="create_applet">
+      <param name="applet.name" value="HelloWorldApplet"/>
+      <param name="applet.version" value="0.1"/>
+      <param name="package.aid" value="0xA0:00:00:00:01"/>
+      <param name="applet.aid" value="0xA0:00:00:00:01:02"/>
+    </antcall>
+  </target>
+  <!-- Target for build all bundled applets -->
+  <target name="toys" depends="compile_sources,hello">
+    <!-- Build the MuscleApplet  -->
+    <antcall target="create_applet">
+      <param name="applet.name" value="MuscleApplet"/>
+      <param name="applet.version" value="0.1"/>
+      <param name="package.aid" value="0xA0:00:00:00:01"/>
+      <param name="applet.aid" value="0xA0:00:00:00:01:01"/>
+    </antcall>
+    <!-- Build the CoolKeyApplet  -->
+    <antcall target="create_applet">
+      <param name="applet.name" value="CoolKeyApplet"/>
+      <param name="applet.version" value="0.1"/>
+      <param name="package.aid" value="0x62:0x76:0x01:0xFF:0x00:0x00"/>
+      <param name="applet.aid" value="0x62:0x76:0x01:0xFF:0x00:0x00:01"/>
+    </antcall>
+    <!-- Build the OpenPGPApplet  -->
+    <antcall target="create_applet">
+      <param name="applet.name" value="OpenPGPApplet"/>
+      <param name="applet.version" value="0.1"/>
+      <param name="package.aid" value="0xD2:0x76:0x00:0x01:0x24:0x01"/>
+      <param name="applet.aid" value="0xD2:0x76:0x00:0x01:0x24:0x01:0x02:0x00:0x00:0x00:0x00:0x00:0x00:0x01:0x00:0x00"/>
+    </antcall>
+    <!-- Build the FluffyPGPApplet  -->
+    <antcall target="create_applet">
+      <param name="applet.name" value="FluffyPGPApplet"/>
+      <param name="applet.version" value="0.1"/>
+      <param name="package.aid" value="0xD2:0x76:0x00:0x01:0x24:0x01"/>
+      <param name="applet.aid" value="0xD2:0x76:0x00:0x01:0x24:0x01:0x02:0x00:0x00:0x00:0x00:0x00:0x00:0x01:0x00:0x00"/>
+    </antcall>
+    <!-- Build the PKIApplet  -->
+    <antcall target="create_applet">
+      <param name="applet.name" value="PKIApplet"/>
+      <param name="applet.version" value="0.1"/>
+      <param name="package.aid" value="0xA0:0x00:0x00:0x00:0x63"/>
+      <param name="applet.aid" value="0xA0:0x00:0x00:0x00:0x63:0x50:0x4B:0x43:0x53:0x2D:0x31:0x35"/>
+    </antcall>
+  </target>
+  <!-- No modification needed below this line -->
+  <loadresource property="PACKAGE_PATH">
+    <!-- Trick to substitute path elements from SO -->
+    <propertyresource name="PACKAGE_NAME"/>
+    <filterchain>
+      <tokenfilter>
+        <replacestring from="." to="/"/>
+      </tokenfilter>
+    </filterchain>
+  </loadresource>
+  <!-- Clean the environment -->
+  <target name="clean">
+    <delete dir="tmp"/>
+    <delete>
+      <fileset dir=".">
+        <include name="*.cap"/>
+      </fileset>
+    </delete>
+  </target>
+  <!-- Compile all sources -->
+  <target name="compile_sources">
+    <mkdir dir="tmp/classes"/>
+    <javac fork="true" includeantruntime="false" srcdir="src/${PACKAGE_PATH}" destdir="tmp/classes" target="1.3" source="1.3">
+      <compilerarg value="-Xlint"/>
+      <compilerarg value="-Xlint:-options"/>
+      <classpath>
+        <pathelement location="${JAVACARD_HOME}/lib/api.jar"/>
+        <pathelement location="${OPENPLATFORM_HOME}/visaop20.jar"/>
+      </classpath>
+    </javac>
+  </target>
+  <!-- Transform compiled applet code into a minified and verified CAP file -->
+  <target name="create_applet">
+    <property name="dir.compiled" value="tmp/${applet.name}"/>
+    <!-- Clean the output target -->
+    <delete dir="${dir.compiled}"/>
+    <!-- Compile -->
+    <echo message="Creating ${applet.name} ..."/>
+    <!-- Optimize -->
+    <echo message="Optimizing ..."/>
+    <java classname="proguard.ProGuard" fork="true" failonerror="true">
+      <arg line="@proguard-applet.conf"/>
+      <arg line="-injars tmp/classes"/>
+      <arg line="-outjars ${dir.compiled}"/>
+      <arg line="-keep public class ${PACKAGE_NAME}.${applet.name}"/>
+      <arg line="-keep public class ${PACKAGE_NAME}.${applet.name} { public &lt;methods&gt;;}"/>
+      <classpath>
+        <pathelement location="ext/proguard.jar"/>
+      </classpath>
+    </java>
+    <!-- Convert -->
+    <echo message="Converting ..."/>
+    <java classname="com.sun.javacard.converter.Converter" fork="true" failonerror="true">
+      <arg line="-classdir '${dir.compiled}' -verbose -nowarn"/>
+      <arg line="-exportpath '${API_EXPORT_FILES}:${OPENPLATFORM_HOME}'"/>
+      <arg line="-out CAP JCA EXP"/>
+      <arg line="-applet ${applet.aid} ${PACKAGE_NAME}.${applet.name} ${PACKAGE_NAME} ${package.aid} ${applet.version}"/>
+      <classpath>
+        <pathelement location="${JAVACARD_HOME}/lib/converter.jar"/>
+        <pathelement location="${JAVACARD_HOME}/lib/offcardverifier.jar"/>
+      </classpath>
+    </java>
+    <!-- Capgen -->
+    <echo message="Generating CAP ..."/>
+    <java classname="com.sun.javacard.jcasm.cap.Main" fork="true" failonerror="true">
+      <arg value="-o${dir.compiled}/${PACKAGE_PATH}/javacard/applets.jar"/>
+      <arg value="${dir.compiled}/${PACKAGE_PATH}/javacard/applets.jca"/>
+      <classpath>
+        <pathelement location="${JAVACARD_HOME}/lib/converter.jar"/>
+        <pathelement location="${JAVACARD_HOME}/lib/offcardverifier.jar"/>
+      </classpath>
+    </java>
+    <!-- Verify -->
+    <echo message="Verifying ..."/>
+    <java classname="com.sun.javacard.offcardverifier.Verifier" fork="true" failonerror="true">
+      <arg line="-verbose"/>
+      <arg line="${API_EXPORT_FILES}/java/lang/javacard/lang.exp"/>
+      <arg line="${API_EXPORT_FILES}/javacard/framework/javacard/framework.exp"/>
+      <arg line="${API_EXPORT_FILES}/javacardx/crypto/javacard/crypto.exp "/>
+      <arg line="${API_EXPORT_FILES}/javacard/security/javacard/security.exp"/>
+      <arg line="${API_EXPORT_FILES}/javacardx/apdu/javacard/apdu.exp"/>
+      <arg line="${OPENPLATFORM_HOME}/visa/openplatform/javacard/openplatform.exp"/>
+      <arg line="${dir.compiled}/${PACKAGE_PATH}/javacard/applets.exp"/>
+      <arg line="${dir.compiled}/${PACKAGE_PATH}/javacard/applets.cap"/>
+      <classpath>
+        <pathelement location="${JAVACARD_HOME}/lib/offcardverifier.jar"/>
+      </classpath>
+    </java>
+    <!-- Copy with nice name -->
+    <echo message="Copying to project root ..."/>
+    <copy file="${dir.compiled}/${PACKAGE_PATH}/javacard/applets.cap" tofile="${applet.name}.cap"/>
+  </target>
+  <!-- OpenKMS applets -->
+  <property name="openkms.aid" value="0xf0:0x4f:0x70:0x65:0x6e:0x4b:0x4d:0x53"/>
+</project>

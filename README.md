@@ -40,7 +40,7 @@ The following changes have been applied to source code of applets:
 ## How to use
  * Import this project into Git and execute the "toys" ANT target
  * Ore use command line and issue "ant clean toys"
- * Use the included GlobalPlatform utility to load applets to card
+ * Use the included [GlobalPlatform utility](https://github.com/martinpaljak/GlobalPlatform#usage) to load any of the generated applets to card
 
 ## In the pipeline:
  * Generic
@@ -49,7 +49,8 @@ The following changes have been applied to source code of applets:
    * Card simulation with [jCardSim](https://github.com/licel/jcardsim)* (Apache 2.0) <sub>currently only supports JavaCard 2.2.1 :(</sub>
  * More applets:
    * ykneo-oath - https://github.com/Yubico/ykneo-oath/ (GPL)
-   * BTChipApplet - https://github.com/btchip/btchipJC (AGPL3)
+   * BTChipApplet - https://github.com/btchip/btchipJC (AGPL3) <sub>Depends on JavaCard 3 support</sub>
+   * If you want to see more applets in the build set, file an issue with link!
  * More flexible build (Grails?)
 
 ## Contact

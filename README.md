@@ -10,6 +10,13 @@ AppletPlayground is an easy method for getting to know JavaCard development. Eve
  * OpenPGPApplet - [Yubico/ykneo-openpgp@ed928351994b053f3d87ec00ec4a9696d4ff20fe](https://github.com/Yubico/ykneo-openpgp/commit/ed928351994b053f3d87ec00ec4a9696d4ff20fe) (GPL2)
  * FluffyPGPApplet - [FluffyKaon/OpenPGP-Card@545da17f82ff4627758674bbcbb0e602e959d9dd](https://github.com/FluffyKaon/OpenPGP-Card/commit/545da17f82ff4627758674bbcbb0e602e959d9dd) (GPL3)
 
+The following changes have been applied to source code of applets:
+ * change of the package name
+ * move of dependant classes to inner classes (as Muscle and CoolKey would conflict, the same "consolidation" was applied to other applets)
+ * GPSystem->OPSystem 
+ * missing casts to short
+ * code formatting
+
 # FEASIBILITY NOTICE
  The above applets and the overall package come "as-is". I make no claims about the feasibility, usability, security, correctness whatsoever of the whole package or any of the components. Use at your own risk. 
 

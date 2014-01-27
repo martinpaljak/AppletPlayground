@@ -5,6 +5,7 @@ AppletPlayground is an easy method for getting to know JavaCard development. Eve
 
 ## Time to experiment!
 ![Experiments!](http://www.freevector.com/site_media/preview_images/FreeVector-Evil-Doctor.jpg)
+<sub>Mad Genius Vector by Vectorya.com License: CC 3.0 Attribution Non-Commercial</sub>
 
 ## Included applets
  * MuscleApplet - as was found in [martinpaljak/MuscleApplet@d005f36209bdd7020bac0d783b228243126fd2f8](https://github.com/martinpaljak/MuscleApplet/commit/d005f36209bdd7020bac0d783b228243126fd2f8) (BSD)

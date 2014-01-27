@@ -3,6 +3,9 @@ Applet Playground
 
 AppletPlayground is an easy method for getting to know JavaCard development. Everything you need to compile and run the open source applets for JavaCard 2.2.2 and load them to GlobalPlatform compatible smart cards for testing with JUnit, for example. Also includes a [Hello World](http://en.wikipedia.org/wiki/Hello_world_program) applet to serve as a starting point of your own applet.
 
+## Time to experiment!
+![Experiments!](http://www.freevector.com/site_media/preview_images/FreeVector-Evil-Doctor.jpg)
+
 ## Included applets
  * MuscleApplet - as was found in [martinpaljak/MuscleApplet@d005f36209bdd7020bac0d783b228243126fd2f8](https://github.com/martinpaljak/MuscleApplet/commit/d005f36209bdd7020bac0d783b228243126fd2f8) (BSD)
  * CoolKeyApplet - [r105](http://svn.fedorahosted.org/svn/coolkey/!svn/bc/105/trunk/applet/) from http://svn.fedorahosted.org/svn/coolkey/trunk/applet (BSD/LGPL2.1)
@@ -34,11 +37,15 @@ The following changes have been applied to source code of applets:
  * [jnasmartcardio](https://github.com/jnasmartcardio/jnasmartcardio) for better access to PC/SC smart card readers directly and through [javax.smartcardio](http://docs.oracle.com/javase/7/docs/jre/api/security/smartcardio/spec/javax/smartcardio/package-summary.html) (CC0 / public domain)
  * JavaCard SDK 2.2.2 (Oracle-owns-you-and-your-grandma license)
 
-
+## How to use
+ * Import this project into Git and execute the "toys" ANT target
+ * Ore use command line and issue "ant clean toys"
+ * Use the included GlobalPlatform utility to load applets to card
 ## In the pipeline:
  * JavaCard 3.X support
  * Code hardening with http://sourceforge.net/projects/cesta/ (BSD)
  * More flexible build (Grails?)
+ * ykneo-oath - https://github.com/Yubico/ykneo-oath/ (GPL)
  * BTChipApplet - https://github.com/btchip/btchipJC (AGPL3)
 
 ## Contact

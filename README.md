@@ -1,7 +1,7 @@
 Applet Playground
 =================
 
-AppletPlayground is an easy method for getting to know JavaCard development. Everything you need to compile and run the open source applets for JavaCard 2.2.2 and load them to GlobalPlatform compatible smart cards for testing with JUnit, for example. Also includes a [Hello World](http://en.wikipedia.org/wiki/Hello_world_program) applet to serve as a starting point of your own applet.
+AppletPlayground is an easy method for getting to know JavaCard development. Everything you need to compile and run the open source applets for JavaCard 2.2.2 and load them to GlobalPlatform compatible smart cards for testing with JUnit, for example. Also includes a [Hello World](http://en.wikipedia.org/wiki/Hello_world_program) applet to serve as a starting point of your own applet. [New features](#in-the-pipeline) coming in near future!
 
 ## Time to experiment!
 ![Experiments!](http://www.freevector.com/site_media/preview_images/FreeVector-Evil-Doctor.jpg)
@@ -24,7 +24,7 @@ The following changes have been applied to source code of applets:
  The above applets and the overall package come "as-is". I make no claims about the feasibility, usability, security, correctness whatsoever of the whole package or any of the components. Use at your own risk. Everything here is only for educational purposes.
 
 ## What you need ?
- * Unix-like operating system like a recent Linux or OS X
+ * Unix-like operating system like a recent Linux or OS X with installed JDK
  * A working smart card reader* with a driver - preferably a [well-behaving CCID one](http://pcsclite.alioth.debian.org/ccid/section.html)
  * A JavaCard 2.2.2 card*
  * Eclipse - get from [eclipse.org](http://eclipse.org/downloads/)
@@ -43,11 +43,14 @@ The following changes have been applied to source code of applets:
  * Use the included GlobalPlatform utility to load applets to card
 
 ## In the pipeline:
- * JavaCard 3.X support
- * Code hardening with http://sourceforge.net/projects/cesta/ (BSD)
+ * Generic
+   * JavaCard 3.0.X as well as JavaCard 2.2.1 support
+   * Automatic code hardening with http://sourceforge.net/projects/cesta/ (BSD)
+   * Card simulation with [jCardSim](https://github.com/licel/jcardsim)* (Apache 2.0) <sub>currently only supports JavaCard 2.2.1 :(</sub>
+ * More applets:
+   * ykneo-oath - https://github.com/Yubico/ykneo-oath/ (GPL)
+   * BTChipApplet - https://github.com/btchip/btchipJC (AGPL3)
  * More flexible build (Grails?)
- * ykneo-oath - https://github.com/Yubico/ykneo-oath/ (GPL)
- * BTChipApplet - https://github.com/btchip/btchipJC (AGPL3)
 
 ## Contact
  * martin@martinpaljak.net

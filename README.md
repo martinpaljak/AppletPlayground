@@ -10,11 +10,16 @@ AppletPlayground is an easy method for getting to know JavaCard development. Eve
  * OpenPGPApplet - Yubico/ykneo-openpgp@ed928351994b053f3d87ec00ec4a9696d4ff20fe (GPL2)
  * FluffyPGPApplet - FluffyKaon/OpenPGP-Card@545da17f82ff4627758674bbcbb0e602e959d9dd (GPL3)
 
+# FEASIBILITY NOTICE
+ All the above applets and the overall pcakage comes "as-is". I make no claims about the feasibility, usability, security, correctness whatsoever of the whole package or any of the components. Use at your own risk. 
+
 ## What you need ?
- * Unix-like operating system: Linux or OS X
- * A working smart card reader*
+ * Unix-like operating system like a recent Linux or OS X
+ * A working smart card reader* with a driver - preferably a [well-behaving CCID one](http://pcsclite.alioth.debian.org/ccid/section.html)
  * A JavaCard 2.2.2 card*
  * Eclipse - get from [eclipse.org](http://eclipse.org/downloads/)
+
+\* you can work with source code without a card and reader, but for actual testing having one is preferable.
 
 ## Included extras:
  * [ProGuard 4.11](http://proguard.sourceforge.net/) for shrinking applet codebase (GPL2)
@@ -22,7 +27,12 @@ AppletPlayground is an easy method for getting to know JavaCard development. Eve
  * [jnasmartcardio](https://github.com/jnasmartcardio/jnasmartcardio) for better access to PC/SC smart card readers directly and through javax.smartcardio (CC0 / public domain)
  * JavaCard SDK 2.2.2 (Oracle-owns-you-and-your-grandma license)
 
+
 ## In the pipeline:
  * JavaCard 3.X support
  * Code hardening with http://sourceforge.net/projects/cesta/ (BSD)
  * More flexible build (Grails?)
+
+## Contact
+ * martin@martinpaljak.net
+ * For improvements file an issue!

@@ -60,3 +60,6 @@ The following changes have been applied to source code of applets:
  * martin@martinpaljak.net
  * For improvements file an issue. Better yet - a pull request!
  * General chat at [OpenKMS Google forum](https://groups.google.com/forum/#!forum/openkms)
+
+## Similar projects
+ * https://minotaur.fi.muni.cz:8443/~xsvenda/docuwiki/doku.php?id=public:smartcard:javacardcompilation

@@ -25,9 +25,10 @@ The following changes have been applied to source code of applets:
  The above applets and the overall package come "as-is". I make no claims about the feasibility, usability, security, correctness whatsoever of the whole package or any of the components. Use at your own risk. Everything here is only for educational purposes.
 
 ## What you need ?
- * Unix-like operating system like a recent Linux or OS X with installed JDK
+ * Unix-like operating system like a recent Linux or OS X with installed JDK 1.7+
  * A working smart card reader* with a driver - preferably a [well-behaving CCID one](http://pcsclite.alioth.debian.org/ccid/section.html)
- * A JavaCard 2.2.2 card* *TODO*: a list of webshops selling compatible JavaCard-s
+ * A JavaCard 2.2.2 card*
+   * [a list of webshops and compatible JavaCards](https://github.com/martinpaljak/GlobalPlatform/wiki/TestedCards)
  * Eclipse - get from [eclipse.org](http://eclipse.org/downloads/)
 
 \* you can work with source code without a card and reader, but for actual testing having one is preferable.
@@ -39,20 +40,20 @@ The following changes have been applied to source code of applets:
  * JavaCard SDK 2.2.2 (Oracle-owns-you-and-your-grandma license)
 
 ## How to use
- * Import this project into Git and execute the "toys" ANT target
- * Ore use command line and issue "ant clean toys"
- * Use the included [GlobalPlatform utility](https://github.com/martinpaljak/GlobalPlatform#usage) to load any of the generated applets to card
+ * Import this project into Git and execute the "toys" ANT target. 
+ * Ore use command line and issue ```ant clean toys```
+ * Use the included [GlobalPlatform utility](https://github.com/martinpaljak/GlobalPlatform#usage) to load any of the generated applets (```.cap``` files)to a card
 
 ## In the pipeline:
  * Generic
-   * JavaCard 3.0.X as well as JavaCard 2.2.1 support
+   * JavaCard 3.0.1/3.0.4 as well as JavaCard 2.2.1 support
    * Automatic code hardening with http://sourceforge.net/projects/cesta/ (BSD)
    * Card simulation with [jCardSim](https://github.com/licel/jcardsim)* (Apache 2.0) <sub>currently only supports JavaCard 2.2.1 :(</sub>
  * More applets:
-   * ykneo-oath - https://github.com/Yubico/ykneo-oath/ (GPL)
+   * ykneo-oath - https://github.com/Yubico/ykneo-oath/ (GPL3)
    * BTChipApplet - https://github.com/btchip/btchipJC (AGPL3) <sub>Depends on JavaCard 3 support</sub>
    * ICAOPassportApplet - http://sourceforge.net/p/jmrtd/code/HEAD/tree/trunk/passportapplet/ (LGPL3)
-   * EstEID - Estonian ID-card compatible applet (BSD)
+   * FakeEstEID - Estonian ID-card compatible applet (BSD)
    * If you want to see more applets in the build set, file an issue with link!
  * More flexible build (Grails?)
 

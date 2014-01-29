@@ -1,11 +1,11 @@
 Applet Playground
 =================
 
-AppletPlayground is an easy method for getting to know JavaCard development. Everything you need to compile and run the open source applets for JavaCard 2.2.2 and load them to GlobalPlatform compatible smart cards for testing with JUnit or running in an emulated/simulated container. Also includes a [Hello World](http://en.wikipedia.org/wiki/Hello_world_program) applet to serve as a starting point of your own applet. [New features](#in-the-pipeline) coming in near future!
+AppletPlayground is an easy method for getting to know JavaCard development. Everything you need to compile and run the open source applets for JavaCard 2.2.2 and load them to GlobalPlatform compatible smart cards for testing with JUnit or running in an emulated/simulated container. Also includes a [Hello World](http://en.wikipedia.org/wiki/Hello_world_program) applet to serve as a starting point for your own applet. [New features](#in-the-pipeline) coming soon!
 
 ## Time to experiment!
 ![Experiments!](http://www.freevector.com/site_media/preview_images/FreeVector-Evil-Doctor.jpg)
-<sub>Mad Genius Vector by Vectorya.com License: CC 3.0 Attribution Non-Commercial</sub>
+<sub>Mad Genius Vector by Vectorya.com (CC 3.0 Attribution Non-Commercial)</sub>
 
 ## Included applets
  * MuscleApplet - as was found in [martinpaljak/MuscleApplet@d005f36209bdd7020bac0d783b228243126fd2f8](https://github.com/martinpaljak/MuscleApplet/commit/d005f36209bdd7020bac0d783b228243126fd2f8) (BSD)
@@ -15,11 +15,11 @@ AppletPlayground is an easy method for getting to know JavaCard development. Eve
  * FluffyPGPApplet - [FluffyKaon/OpenPGP-Card@545da17f82ff4627758674bbcbb0e602e959d9dd](https://github.com/FluffyKaon/OpenPGP-Card/commit/545da17f82ff4627758674bbcbb0e602e959d9dd) (GPL3)
 
 The following changes have been applied to source code of applets:
- * change of the package name
+ * change of the package name to ```pro.javacard.applets```
  * move of dependant classes to inner classes (as Muscle and CoolKey would conflict, the same "consolidation" was applied to other applets)
- * GPSystem->OPSystem 
+ * ```GPSystem```->```OPSystem``` 
  * missing casts to short
- * code formatting
+ * code formatting if done automagically by eclipse formatter.
 
 # FEASIBILITY NOTICE
  The above applets and the overall package come "as-is". I make no claims about the feasibility, usability, security, correctness whatsoever of the whole package or any of the components. Use at your own risk. Everything here is only for educational purposes.

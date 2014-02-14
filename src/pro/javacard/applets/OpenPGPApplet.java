@@ -33,7 +33,7 @@ import javacardx.apdu.ExtendedLength;
 import javacardx.crypto.Cipher;
 
 /**
- * AID of the applet should be according to the OpenPGP card standard v2.0.1 
+ * AID of the applet should be according to the OpenPGP card standard v2.0.1
  * E.g. D2760001240102000000000000010000:
  * D276000124 - RID of FSFE
  * 01 - OpenPGP application
@@ -51,21 +51,21 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 	private static final short _0 = 0;
 
 	private static final byte[] HISTORICAL = { 0x00, 0x73, 0x00, 0x00,
-			(byte) 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00 };
-	
+		(byte) 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00 };
+
 	// returned by vendor specific command f1
 	private static final byte[] VERSION = { 0x01, 0x00, 0x05 };
 
-	private static final byte[] EXTENDED_CAP = { 
-			(byte) 0xF0, // Support for GET CHALLENGE
-						 // Support for Key Import
-						 // PW1 Status byte changeable
-			0x00, // Secure messaging using 3DES
-			0x00, (byte) 0xFF, // Maximum length of challenges
-			0x00, (byte) 0xFF, // Maximum length Cardholder Certificate
-			0x00, (byte) 0xFF, // Maximum length command data
-			0x00, (byte) 0xFF  // Maximum length response data
+	private static final byte[] EXTENDED_CAP = {
+		(byte) 0xF0, // Support for GET CHALLENGE
+		// Support for Key Import
+		// PW1 Status byte changeable
+		0x00, // Secure messaging using 3DES
+		0x00, (byte) 0xFF, // Maximum length of challenges
+		0x00, (byte) 0xFF, // Maximum length Cardholder Certificate
+		0x00, (byte) 0xFF, // Maximum length command data
+		0x00, (byte) 0xFF  // Maximum length response data
 	};
 
 	private static short RESPONSE_MAX_LENGTH = 255;
@@ -194,92 +194,91 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 		}
 
 		byte[] buf = apdu.getBuffer();
-		byte cla= buf[ISO7816.OFFSET_CLA];
 		byte ins = buf[ISO7816.OFFSET_INS];
 		byte p1 = buf[ISO7816.OFFSET_P1];
 		byte p2 = buf[ISO7816.OFFSET_P2];
 		short p1p2 = Util.makeShort(p1, p2);
 		short lc = (short) (buf[ISO7816.OFFSET_LC] & 0xFF);
- 		
+
 		short status = ISO7816.SW_NO_ERROR;
 		short le = 0;
-		
+
 		try {
 			// Support for command chaining
 			commandChaining(apdu);
-	
+
 			// Reset buffer for GET RESPONSE
 			if (ins != (byte) 0xC0) {
 				out_sent = 0;
 				out_left = 0;
 			}
-	
+
 			// Other instructions
 			switch (ins) {
 			// GET RESPONSE
 			case (byte) 0xC0:
 				// Will be handled in finally clause
 				break;
-			
+
 			// VERIFY
 			case (byte) 0x20:
 				verify(apdu, p2);
-				break;
-	
+			break;
+
 			// CHANGE REFERENCE DATA
 			case (byte) 0x24:
 				changeReferenceData(apdu, p2);
-				break;
-	
+			break;
+
 			// RESET RETRY COUNTER
 			case (byte) 0x2C:
 				// Reset only available for PW1
 				if (p2 != (byte) 0x81)
 					ISOException.throwIt(ISO7816.SW_INCORRECT_P1P2);
-	
-				resetRetryCounter(apdu, p1);
-				break;
-	
+
+			resetRetryCounter(apdu, p1);
+			break;
+
 			// PERFORM SECURITY OPERATION
 			case (byte) 0x2A:
 				// COMPUTE DIGITAL SIGNATURE
 				if (p1p2 == (short) 0x9E9A) {
 					le = computeDigitalSignature(apdu);
 				}
-				// DECIPHER
+			// DECIPHER
 				else if (p1p2 == (short) 0x8086) {
 					le = decipher(apdu);
 				} else {
 					ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
 				}
-	
-				break;
-	
+
+			break;
+
 			// INTERNAL AUTHENTICATE
 			case (byte) 0x88:
 				le = internalAuthenticate(apdu);
-				break;
-	
+			break;
+
 			// GENERATE ASYMMETRIC KEY PAIR
 			case (byte) 0x47:
 				le = genAsymKey(apdu, p1);
-				break;
-	
+			break;
+
 			// GET CHALLENGE
 			case (byte) 0x84:
 				le = getChallenge(apdu, lc);
-				break;
-	
+			break;
+
 			// GET DATA
 			case (byte) 0xCA:
 				le = getData(p1p2);
-				break;
-	
+			break;
+
 			// PUT DATA
 			case (byte) 0xDA:
 				putData(p1p2);
-				break;
-	
+			break;
+
 			// DB - PUT DATA (Odd)
 			case (byte) 0xDB:
 				// Odd PUT DATA only supported for importing keys
@@ -289,13 +288,18 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 				} else {
 					ISOException.throwIt(ISO7816.SW_RECORD_NOT_FOUND);
 				}
-				break;
-				
+			break;
+
 			// GET VERSION (vendor specific)
 			case (byte) 0xF1:
 				le = Util.arrayCopy(VERSION, _0, buffer, _0, (short) VERSION.length);
-				break;
-	
+			break;
+			// GET VERSION (vendor specific)
+			case (byte) 0xFE:
+
+				le = Util.arrayCopy(VERSION, _0, buffer, _0, (short) VERSION.length);
+			apdu.setOutgoingAndSend((short)0, le);
+			break;
 			default:
 				// good practice: If you don't know the INStruction, say so:
 				ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
@@ -306,7 +310,7 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 		}
 		finally {
 			if(status != (short)0x9000) {
-				// Send the exception that was thrown 
+				// Send the exception that was thrown
 				sendException(apdu, status);
 			}
 			else {
@@ -416,7 +420,7 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 					pw1_modes[PW1_MODE_NO82] = true;
 			} else {
 				ISOException
-						.throwIt((short) (0x63C0 | pw1.getTriesRemaining()));
+				.throwIt((short) (0x63C0 | pw1.getTriesRemaining()));
 			}
 		} else if (mode == (byte) 0x83) {
 			// Check length of input
@@ -426,7 +430,7 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 			// Check PW3
 			if (!pw3.check(buffer, _0, (byte) in_received)) {
 				ISOException
-						.throwIt((short) (0x63C0 | pw3.getTriesRemaining()));
+				.throwIt((short) (0x63C0 | pw3.getTriesRemaining()));
 			}
 		} else {
 			ISOException.throwIt(ISO7816.SW_INCORRECT_P1P2);
@@ -644,8 +648,8 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
 		random.generateData(buffer, _0, len);
-		
-	
+
+
 		return len;
 	}
 
@@ -681,169 +685,169 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 		// 65 - Cardholder Related Data
 		case (short) 0x0065:
 			buffer[offset++] = 0x65;
-			buffer[offset++] = 0x00;
+		buffer[offset++] = 0x00;
 
-			// 5B - Name
-			buffer[offset++] = 0x5B;
-			buffer[offset++] = (byte) name_length;
-			offset = Util.arrayCopyNonAtomic(name, _0, buffer, offset,
-					name_length);
+		// 5B - Name
+		buffer[offset++] = 0x5B;
+		buffer[offset++] = (byte) name_length;
+		offset = Util.arrayCopyNonAtomic(name, _0, buffer, offset,
+				name_length);
 
-			// 5F2D - Language
-			buffer[offset++] = 0x5F;
-			buffer[offset++] = 0x2D;
-			buffer[offset++] = (byte) lang_length;
-			offset = Util.arrayCopyNonAtomic(lang, _0, buffer, offset,
-					lang_length);
+		// 5F2D - Language
+		buffer[offset++] = 0x5F;
+		buffer[offset++] = 0x2D;
+		buffer[offset++] = (byte) lang_length;
+		offset = Util.arrayCopyNonAtomic(lang, _0, buffer, offset,
+				lang_length);
 
-			// 5F35 - Sex
-			buffer[offset++] = 0x5F;
-			buffer[offset++] = 0x35;
-			buffer[offset++] = 0x01;
-			buffer[offset++] = sex;
+		// 5F35 - Sex
+		buffer[offset++] = 0x5F;
+		buffer[offset++] = 0x35;
+		buffer[offset++] = 0x01;
+		buffer[offset++] = sex;
 
-			// Set length for combined data
-			buffer[1] = (byte) (offset - 2);
+		// Set length for combined data
+		buffer[1] = (byte) (offset - 2);
 
-			return offset;
+		return offset;
 
 		// 6E - Application Related Data
 		case (short) 0x006E:
 			buffer[offset++] = 0x6E;
-			// Total length assumed to be >= 128 and < 256
-			buffer[offset++] = (byte) 0x81;
-			buffer[offset++] = 0;
+		// Total length assumed to be >= 128 and < 256
+		buffer[offset++] = (byte) 0x81;
+		buffer[offset++] = 0;
 
-			// 4F - AID
-			buffer[offset++] = 0x4F;
-			byte len = JCSystem.getAID().getBytes(buffer, (short)(offset + 1));
-			buffer[offset++] = len;
-			offset += len;
+		// 4F - AID
+		buffer[offset++] = 0x4F;
+		byte len = JCSystem.getAID().getBytes(buffer, (short)(offset + 1));
+		buffer[offset++] = len;
+		offset += len;
 
-			// 5F52 - Historical bytes
-			buffer[offset++] = 0x5F;
-			buffer[offset++] = 0x52;
-			buffer[offset++] = (byte) HISTORICAL.length;
-			offset = Util.arrayCopyNonAtomic(HISTORICAL, _0, buffer, offset,
-					(short) HISTORICAL.length);
+		// 5F52 - Historical bytes
+		buffer[offset++] = 0x5F;
+		buffer[offset++] = 0x52;
+		buffer[offset++] = (byte) HISTORICAL.length;
+		offset = Util.arrayCopyNonAtomic(HISTORICAL, _0, buffer, offset,
+				(short) HISTORICAL.length);
 
-			// 73 - Discretionary data objects
-			buffer[offset++] = 0x73;
-			buffer[offset++] = 0x00;
+		// 73 - Discretionary data objects
+		buffer[offset++] = 0x73;
+		buffer[offset++] = 0x00;
 
-			// C0 - Extended capabilities
-			buffer[offset++] = (byte) 0xC0;
-			buffer[offset++] = (byte) EXTENDED_CAP.length;
-			offset = Util.arrayCopyNonAtomic(EXTENDED_CAP, _0, buffer, offset,
-					(short) EXTENDED_CAP.length);
+		// C0 - Extended capabilities
+		buffer[offset++] = (byte) 0xC0;
+		buffer[offset++] = (byte) EXTENDED_CAP.length;
+		offset = Util.arrayCopyNonAtomic(EXTENDED_CAP, _0, buffer, offset,
+				(short) EXTENDED_CAP.length);
 
-			// C1 - Algorithm attributes signature
-			buffer[offset++] = (byte) 0xC1;
-			buffer[offset++] = (byte) 0x06;
-			offset = sig_key.getAttributes(buffer, offset);
+		// C1 - Algorithm attributes signature
+		buffer[offset++] = (byte) 0xC1;
+		buffer[offset++] = (byte) 0x06;
+		offset = sig_key.getAttributes(buffer, offset);
 
-			// C2 - Algorithm attributes decryption
-			buffer[offset++] = (byte) 0xC2;
-			buffer[offset++] = (byte) 0x06;
-			offset = dec_key.getAttributes(buffer, offset);
+		// C2 - Algorithm attributes decryption
+		buffer[offset++] = (byte) 0xC2;
+		buffer[offset++] = (byte) 0x06;
+		offset = dec_key.getAttributes(buffer, offset);
 
-			// C3 - Algorithm attributes authentication
-			buffer[offset++] = (byte) 0xC3;
-			buffer[offset++] = (byte) 0x06;
-			offset = auth_key.getAttributes(buffer, offset);
+		// C3 - Algorithm attributes authentication
+		buffer[offset++] = (byte) 0xC3;
+		buffer[offset++] = (byte) 0x06;
+		offset = auth_key.getAttributes(buffer, offset);
 
-			// C4 - PW1 Status bytes
-			buffer[offset++] = (byte) 0xC4;
-			buffer[offset++] = 0x07;
-			buffer[offset++] = pw1_status;
-			buffer[offset++] = PW1_MAX_LENGTH;
-			buffer[offset++] = RC_MAX_LENGTH;
-			buffer[offset++] = PW3_MAX_LENGTH;
-			buffer[offset++] = pw1.getTriesRemaining();
-			buffer[offset++] = rc.getTriesRemaining();
-			buffer[offset++] = pw3.getTriesRemaining();
+		// C4 - PW1 Status bytes
+		buffer[offset++] = (byte) 0xC4;
+		buffer[offset++] = 0x07;
+		buffer[offset++] = pw1_status;
+		buffer[offset++] = PW1_MAX_LENGTH;
+		buffer[offset++] = RC_MAX_LENGTH;
+		buffer[offset++] = PW3_MAX_LENGTH;
+		buffer[offset++] = pw1.getTriesRemaining();
+		buffer[offset++] = rc.getTriesRemaining();
+		buffer[offset++] = pw3.getTriesRemaining();
 
-			// C5 - Fingerprints sign, dec and auth keys
-			buffer[offset++] = (byte) 0xC5;
-			buffer[offset++] = (short) 60;
-			offset = sig_key.getFingerprint(buffer, offset);
-			offset = dec_key.getFingerprint(buffer, offset);
-			offset = auth_key.getFingerprint(buffer, offset);
+		// C5 - Fingerprints sign, dec and auth keys
+		buffer[offset++] = (byte) 0xC5;
+		buffer[offset++] = (short) 60;
+		offset = sig_key.getFingerprint(buffer, offset);
+		offset = dec_key.getFingerprint(buffer, offset);
+		offset = auth_key.getFingerprint(buffer, offset);
 
-			// C6 - Fingerprints CA 1, 2 and 3
-			buffer[offset++] = (byte) 0xC6;
-			buffer[offset++] = (short) 60;
-			offset = Util.arrayCopyNonAtomic(ca1_fp, _0, buffer, offset,
-					(short) 20);
-			offset = Util.arrayCopyNonAtomic(ca2_fp, _0, buffer, offset,
-					(short) 20);
-			offset = Util.arrayCopyNonAtomic(ca3_fp, _0, buffer, offset,
-					(short) 20);
+		// C6 - Fingerprints CA 1, 2 and 3
+		buffer[offset++] = (byte) 0xC6;
+		buffer[offset++] = (short) 60;
+		offset = Util.arrayCopyNonAtomic(ca1_fp, _0, buffer, offset,
+				(short) 20);
+		offset = Util.arrayCopyNonAtomic(ca2_fp, _0, buffer, offset,
+				(short) 20);
+		offset = Util.arrayCopyNonAtomic(ca3_fp, _0, buffer, offset,
+				(short) 20);
 
-			// CD - Generation times of public key pair
-			buffer[offset++] = (byte) 0xCD;
-			buffer[offset++] = (short) 12;
-			offset = sig_key.getTime(buffer, offset);
-			offset = dec_key.getTime(buffer, offset);
-			offset = auth_key.getTime(buffer, offset);
+		// CD - Generation times of public key pair
+		buffer[offset++] = (byte) 0xCD;
+		buffer[offset++] = (short) 12;
+		offset = sig_key.getTime(buffer, offset);
+		offset = dec_key.getTime(buffer, offset);
+		offset = auth_key.getTime(buffer, offset);
 
-			// Set length of combined data
-			buffer[2] = (byte) (offset - 3);
+		// Set length of combined data
+		buffer[2] = (byte) (offset - 3);
 
-			return offset;
+		return offset;
 
 		// 7A - Security support template
 		case (short) 0x007A:
 			buffer[offset++] = 0x7A;
-			buffer[offset++] = (byte) 0x05;
+		buffer[offset++] = (byte) 0x05;
 
-			// 93 - Digital signature counter
-			buffer[offset++] = (byte) 0x93;
-			buffer[offset++] = 0x03;
-			offset = Util.arrayCopyNonAtomic(ds_counter, _0, buffer, offset,
-					(short) 3);
+		// 93 - Digital signature counter
+		buffer[offset++] = (byte) 0x93;
+		buffer[offset++] = 0x03;
+		offset = Util.arrayCopyNonAtomic(ds_counter, _0, buffer, offset,
+				(short) 3);
 
-			return offset;
+		return offset;
 
 		// 7F21 - Cardholder Certificate
 		case (short) 0x7F21:
 			// Use buffer since certificate may be longer than
 			// RESPONSE_MAX_LENGTH
 			buffer[offset++] = 0x7F;
-			buffer[offset++] = 0x21;
+		buffer[offset++] = 0x21;
 
-			if (cert_length < 128) {
-				buffer[offset++] = (byte) cert_length;
-			} else if (cert_length < 256) {
-				buffer[offset++] = (byte) 0x81;
-				buffer[offset++] = (byte) cert_length;
-			} else {
-				buffer[offset++] = (byte) 0x82;
-				Util.setShort(buffer, offset, cert_length);
-				offset += 2;
-			}
+		if (cert_length < 128) {
+			buffer[offset++] = (byte) cert_length;
+		} else if (cert_length < 256) {
+			buffer[offset++] = (byte) 0x81;
+			buffer[offset++] = (byte) cert_length;
+		} else {
+			buffer[offset++] = (byte) 0x82;
+			Util.setShort(buffer, offset, cert_length);
+			offset += 2;
+		}
 
-			offset = Util.arrayCopyNonAtomic(cert, _0, buffer, offset,
-					cert_length);
+		offset = Util.arrayCopyNonAtomic(cert, _0, buffer, offset,
+				cert_length);
 
-			return offset;
+		return offset;
 
 		// C4 - PW Status Bytes
 		case (short) 0x00C4:
 			buffer[offset++] = pw1_status;
-			buffer[offset++] = PW1_MAX_LENGTH;
-			buffer[offset++] = RC_MAX_LENGTH;
-			buffer[offset++] = PW3_MAX_LENGTH;
-			buffer[offset++] = pw1.getTriesRemaining();
-			buffer[offset++] = rc.getTriesRemaining();
-			buffer[offset++] = pw3.getTriesRemaining();
+		buffer[offset++] = PW1_MAX_LENGTH;
+		buffer[offset++] = RC_MAX_LENGTH;
+		buffer[offset++] = PW3_MAX_LENGTH;
+		buffer[offset++] = pw1.getTriesRemaining();
+		buffer[offset++] = rc.getTriesRemaining();
+		buffer[offset++] = pw3.getTriesRemaining();
 
-			return offset;
+		return offset;
 
 		default:
 			ISOException.throwIt(ISO7816.SW_RECORD_NOT_FOUND);
 		}
-		
+
 		return offset;
 	}
 
@@ -868,148 +872,148 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 			if (in_received > name.length)
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-			JCSystem.beginTransaction();
-			name_length = Util.arrayCopy(buffer, _0, name, _0, in_received);
-			JCSystem.commitTransaction();
-			break;
+		JCSystem.beginTransaction();
+		name_length = Util.arrayCopy(buffer, _0, name, _0, in_received);
+		JCSystem.commitTransaction();
+		break;
 
 		// 5E - Login data
 		case (short) 0x005E:
 			if (in_received > loginData.length)
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-			JCSystem.beginTransaction();
-			loginData_length = Util.arrayCopy(buffer, _0, loginData, _0,
-					in_received);
-			JCSystem.commitTransaction();
-			break;
+		JCSystem.beginTransaction();
+		loginData_length = Util.arrayCopy(buffer, _0, loginData, _0,
+				in_received);
+		JCSystem.commitTransaction();
+		break;
 
 		// 5F2D - Language preferences
 		case (short) 0x5F2D:
 			if (in_received > lang.length)
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-			JCSystem.beginTransaction();
-			lang_length = Util.arrayCopy(buffer, _0, lang, _0, in_received);
-			JCSystem.commitTransaction();
-			break;
+		JCSystem.beginTransaction();
+		lang_length = Util.arrayCopy(buffer, _0, lang, _0, in_received);
+		JCSystem.commitTransaction();
+		break;
 
 		// 5F35 - Sex
 		case (short) 0x5F35:
 			if (in_received != 1)
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-			// Check for valid values
-			if (buffer[0] != (byte) 0x31 && buffer[0] != (byte) 0x32
-					&& buffer[0] != (byte) 0x39)
-				ISOException.throwIt(ISO7816.SW_WRONG_DATA);
+		// Check for valid values
+		if (buffer[0] != (byte) 0x31 && buffer[0] != (byte) 0x32
+				&& buffer[0] != (byte) 0x39)
+			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 
-			sex = buffer[0];
-			break;
+		sex = buffer[0];
+		break;
 
 		// 5F50 - URL
 		case (short) 0x5F50:
 			if (in_received > url.length)
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-			JCSystem.beginTransaction();
-			url_length = Util.arrayCopy(buffer, _0, url, _0, in_received);
-			JCSystem.commitTransaction();
-			break;
+		JCSystem.beginTransaction();
+		url_length = Util.arrayCopy(buffer, _0, url, _0, in_received);
+		JCSystem.commitTransaction();
+		break;
 
 		// 7F21 - Cardholder certificate
 		case (short) 0x7F21:
 			if (in_received > cert.length)
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-			JCSystem.beginTransaction();
-			cert_length = Util.arrayCopy(buffer, _0, cert, _0, in_received);
-			JCSystem.commitTransaction();
-			break;
+		JCSystem.beginTransaction();
+		cert_length = Util.arrayCopy(buffer, _0, cert, _0, in_received);
+		JCSystem.commitTransaction();
+		break;
 
 		// C4 - PW Status Bytes
 		case (short) 0x00C4:
 			if (in_received != 1)
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-			// Check for valid values
-			if (buffer[0] != (byte) 0x00 && buffer[0] != (byte) 0x01)
-				ISOException.throwIt(ISO7816.SW_WRONG_DATA);
+		// Check for valid values
+		if (buffer[0] != (byte) 0x00 && buffer[0] != (byte) 0x01)
+			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 
-			pw1_status = buffer[0];
-			break;
+		pw1_status = buffer[0];
+		break;
 
 		// C7 - Fingerprint signature key
 		case (short) 0x00C7:
 			if (in_received != PGPKey.FP_SIZE)
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-			sig_key.setFingerprint(buffer, _0);
-			break;
+		sig_key.setFingerprint(buffer, _0);
+		break;
 
 		// C8 - Fingerprint decryption key
 		case (short) 0x00C8:
 			if (in_received != PGPKey.FP_SIZE)
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-			dec_key.setFingerprint(buffer, _0);
-			break;
+		dec_key.setFingerprint(buffer, _0);
+		break;
 
 		// C9 - Fingerprint authentication key
 		case (short) 0x00C9:
 			if (in_received != PGPKey.FP_SIZE)
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-			auth_key.setFingerprint(buffer, _0);
-			break;
+		auth_key.setFingerprint(buffer, _0);
+		break;
 
 		// CA - Fingerprint Certification Authority 1
 		case (short) 0x00CA:
 			if (in_received != ca1_fp.length)
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-			Util.arrayCopy(buffer, _0, ca1_fp, _0, in_received);
-			break;
+		Util.arrayCopy(buffer, _0, ca1_fp, _0, in_received);
+		break;
 
 		// CB - Fingerprint Certification Authority 2
 		case (short) 0x00CB:
 			if (in_received != ca2_fp.length)
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-			Util.arrayCopy(buffer, _0, ca2_fp, _0, in_received);
-			break;
+		Util.arrayCopy(buffer, _0, ca2_fp, _0, in_received);
+		break;
 
 		// CC - Fingerprint Certification Authority 3
 		case (short) 0x00CC:
 			if (in_received != ca3_fp.length)
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-			Util.arrayCopy(buffer, _0, ca3_fp, _0, in_received);
-			break;
+		Util.arrayCopy(buffer, _0, ca3_fp, _0, in_received);
+		break;
 
 		// CE - Signature key generation date/time
 		case (short) 0x00CE:
 			if (in_received != 4)
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-			sig_key.setTime(buffer, _0);
-			break;
+		sig_key.setTime(buffer, _0);
+		break;
 
 		// CF - Decryption key generation date/time
 		case (short) 0x00CF:
 			if (in_received != 4)
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-			dec_key.setTime(buffer, _0);
-			break;
+		dec_key.setTime(buffer, _0);
+		break;
 
 		// D0 - Authentication key generation date/time
 		case (short) 0x00D0:
 			if (in_received != 4)
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-			auth_key.setTime(buffer, _0);
-			break;
+		auth_key.setTime(buffer, _0);
+		break;
 
 		// D3 - Resetting Code
 		case (short) 0x00D3:
@@ -1025,20 +1029,20 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 			} else {
 				ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 			}
-			break;
+		break;
 
 		// D1 - SM-Key-ENC
 		case (short) 0x00D1:
 			break;
-			
+
 		// D2 - SM-Key-MAC
 		case (short) 0x00D2:
 			break;
-			
+
 		// F4 - SM-Key-Container
 		case (short) 0x00F4:
 			break;
-			
+
 		default:
 			ISOException.throwIt(ISO7816.SW_RECORD_NOT_FOUND);
 			break;
@@ -1214,18 +1218,18 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 	private void sendException(APDU apdu, short status) {
 		out_sent = 0;
 		out_left = 0;
-		sendNext(apdu, status);		
+		sendNext(apdu, status);
 	}
-	
+
 	/**
 	 * Send next block of data in buffer. Used for sending data in <buffer>
 	 * 
 	 * @param apdu
-	 */	
+	 */
 	private void sendNext(APDU apdu) {
 		sendNext(apdu, ISO7816.SW_NO_ERROR);
-	}	
-	
+	}
+
 	/**
 	 * Send next block of data in buffer. Used for sending data in <buffer>
 	 * 
@@ -1235,21 +1239,21 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 	private void sendNext(APDU apdu, short status) {
 		byte[] buf = APDU.getCurrentAPDUBuffer();
 		apdu.setOutgoing();
-		
+
 		// Determine maximum size of the messages
 		short max_length = RESPONSE_MAX_LENGTH;
-		
+
 		Util.arrayCopyNonAtomic(buffer, out_sent, buf, _0, max_length);
 
 		short len = 0;
-		
+
 		if (out_left > max_length) {
 			len = max_length;
-			
+
 			// Compute byte left and sent
 			out_left -= max_length;
 			out_sent += max_length;
-			
+
 			// Determine new status word
 			if (out_left > max_length) {
 				status = (short) (ISO7816.SW_BYTES_REMAINING_00 | max_length);
@@ -1259,12 +1263,12 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 		}
 		else {
 			len = out_left;
-			
+
 			// Reset buffer
 			out_sent = 0;
-			out_left = 0;			
+			out_left = 0;
 		}
-				
+
 		// Send data in buffer
 		apdu.setOutgoingLength(len);
 		apdu.sendBytes(_0, len);
@@ -1359,8 +1363,8 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 			}
 		}
 	}
-	
-	
+
+
 	private class PGPKey {
 		public static final short KEY_SIZE = 2048;// 2368;
 		public static final short KEY_SIZE_BYTES = KEY_SIZE / 8;
@@ -1399,7 +1403,7 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 		 *            Offset within byte array containing first byte
 		 */
 		public void setFingerprint(byte[] data, short offset) {
-			
+
 			Util.arrayCopyNonAtomic(data, offset, fp, (short) 0, (short) fp.length);
 		}
 

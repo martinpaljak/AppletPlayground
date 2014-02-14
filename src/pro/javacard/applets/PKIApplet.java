@@ -164,12 +164,6 @@ public class PKIApplet extends Applet implements ISO7816 {
 	}
 
 	public void process(APDU apdu) {
-		byte protocol = (byte)(APDU.getProtocol() & APDU.PROTOCOL_MEDIA_MASK);
-		//if(protocol == APDU.PROTOCOL_MEDIA_CONTACTLESS_TYPE_A
-		//    || protocol == APDU.PROTOCOL_MEDIA_CONTACTLESS_TYPE_B) {
-		//    // We are in contactless mode, refuse operation:
-		//    ISOException.throwIt(SW_FUNC_NOT_SUPPORTED);
-		//}
 
 		byte[] buf = apdu.getBuffer();
 		byte cla = buf[OFFSET_CLA];
@@ -1403,7 +1397,7 @@ public class PKIApplet extends Applet implements ISO7816 {
 	 * @author Wojciech Mostowski <woj@cs.ru.nl>
 	 * 
 	 */
-	class FileNotFoundException extends Exception {
+	private static final class FileNotFoundException extends Exception {
 	}
 
 }

@@ -76,7 +76,6 @@ import javacard.security.PrivateKey;
 import javacard.security.RSAPrivateCrtKey;
 import javacard.security.RSAPublicKey;
 import javacard.security.RandomData;
-import javacard.security.Signature;
 import javacardx.crypto.Cipher;
 import visa.openplatform.OPSystem;
 import visa.openplatform.ProviderSecurityDomain;
@@ -142,63 +141,19 @@ public class CoolKeyApplet extends Applet {
 	private static final short BUILDID_MINOR = (short) 0x7c4e;
 	private static final short ZEROS = 0;
 
-	// * Enable pin size check
-	private static final byte PIN_POLICY_SIZE = 1;
-
-	// * Enable pin charset check
-	private static final byte PIN_POLICY_CHARSET = 2;
-
-	// * Enable charset mixing check
-	private static final byte PIN_POLICY_MIXED = 4;
-
-	// * Numbers are allowed
-	private static final byte PIN_CHARSET_NUMBERS = 1;
-
-	// * Upper case letters
-	private static final byte PIN_CHARSET_UC_LETTERS = 2;
-
-	// * Lower case letters
-	private static final byte PIN_CHARSET_LC_LETTERS = 4;
-
-	// * Punctuation symbols: , .
-	private static final byte PIN_CHARSET_PUNCT = 8;
-
-	// * Other binary codes (NUMBERS | OTHERS excludes LETTERS and PUNCT)
-	private static final byte PIN_CHARSET_OTHERS = (byte) 0x80;
-
-	// * PIN must contain chars from at least 2 different char sets
-	private static final byte PIN_MIXED_TWO = 1;
-
-	// * PIN must at least contain chars from both upper and lower case
-	private static final byte PIN_MIXED_CASE = 2;
-
-	// * PIN must at least contain 1 char from each char set
-	private static final byte PIN_MIXED_ALL = 4;
-
-	/**
-	 * The User's PIN is pin 0. There is no SO pin.
-	 */
-	private static final byte USER_IDENTITY = 0;
 	private static final byte DEFAULT_IDENTITY = 15; // MUSCLE reserved ID
 	private static final byte RA_IDENTITY = 14; // MUSCLE reserved ID
 	private static final short NONCE_SIZE = (short) 8;
 	private static final short ISSUER_INFO_SIZE = (short) 0xe0;
 
-	private static final short USER_ACL = (short) (1 << USER_IDENTITY);
-	private static final short DEFAULT_ACL = (short) (1 << DEFAULT_IDENTITY);
 	private static final short RA_ACL = (short) (1 << RA_IDENTITY);
 	private static final short ANY_ONE_ACL = (short) 0xffff;
 	private static final short NO_ONE_ACL = (short) 0;
 
-	private static final byte pinPolicies = 7;
 	private static final byte pinMinSize = 4;
 	private static final byte pinMaxSize = 16;
 
 	private static final byte MAX_KEY_TRIES = 5;
-	private static final short IN_OBJECT_CLA = -1;
-	private static final short IN_OBJECT_ID = -2;
-	private static final short OUT_OBJECT_CLA = -1;
-	private static final short OUT_OBJECT_ID = -1;
 	private static final byte KEY_ACL_SIZE = 6;
 
 	private static final byte CardEdge_CLA = (byte) 0xB0;
@@ -208,15 +163,6 @@ public class CoolKeyApplet extends Applet {
 	/**
 	 * Instruction codes
 	 */
-	/* Deprecated */
-	private static final byte INS_SETUP = (byte) 0x2A;
-	private static final byte INS_GEN_KEYPAIR = (byte) 0x30;
-	private static final byte INS_EXPORT_KEY = (byte) 0x34;
-	private static final byte INS_UNBLOCK_PIN = (byte) 0x46;
-	private static final byte INS_GET_CHALLENGE = (byte) 0x62;
-	private static final byte INS_CAC_EXT_AUTH = (byte) 0x38;
-	private static final byte INS_LOGOUT_ALL = (byte) 0x60;
-
 	/* public */
 	private static final byte INS_VERIFY_PIN = (byte) 0x42;
 	private static final byte INS_LIST_OBJECTS = (byte) 0x58;
@@ -276,17 +222,11 @@ public class CoolKeyApplet extends Applet {
 	// * New object ID already in use
 	private static final short SW_OBJECT_EXISTS = (short) 0x9C08;
 
-	// * Algorithm specified is not correct
-	private static final short SW_INCORRECT_ALG = (short) 0x9C09;
-
 	// * Verify operation detected an invalid signature
 	private static final short SW_SIGNATURE_INVALID = (short) 0x9C0B;
 
 	// * Operation has been blocked for security reason
 	private static final short SW_IDENTITY_BLOCKED = (short) 0x9C0C;
-
-	// * Unspecified Applet error
-	private static final short SW_UNSPECIFIED_ERROR = (short) 0x9C0D;
 
 	// * Invalid input parameter to command
 	private static final short SW_INVALID_PARAMETER = (short) 0x9C0F;
@@ -305,9 +245,6 @@ public class CoolKeyApplet extends Applet {
 
 	// * Cipher Direction invalid, unrecognized
 	private static final short SW_DIRECTION_INVALID = (short) 0x9C14;
-
-	// * Data Location given is not supported for this Operation
-	private static final short SW_LOCATION_UNSUPPORTED = (short) 0x9C15;
 
 	// * Data Location invalid, unrecognized
 	private static final short SW_LOCATION_INVALID = (short) 0x9C16;
@@ -351,12 +288,7 @@ public class CoolKeyApplet extends Applet {
 	// * For debugging purposes
 	private static final short SW_INTERNAL_ERROR = (short) 0x9CFF;
 
-	private static final byte ALG_RSA = 0;
-	private static final byte ALG_RSA_CRT = 1;
-	private static final byte ALG_DSA = 2;
 	private static final byte ALG_DES = 3;
-	private static final byte ALG_3DES = 4;
-	private static final byte ALG_3DES3 = 5;
 
 	private static final byte KEY_RSA_PUBLIC = 1;
 	private static final byte KEY_RSA_PRIVATE = 2;
@@ -367,8 +299,6 @@ public class CoolKeyApplet extends Applet {
 	private static final byte KEY_3DES = 7;
 	private static final byte KEY_3DES3 = 8;
 	private static final byte KEY_RSA_PKCS8_PAIR = 9;
-
-	private static final byte BLOB_ENC_PLAIN = 0;
 
 	private static final byte OP_INIT = 1;
 	private static final byte OP_PROCESS = 2;
@@ -382,9 +312,6 @@ public class CoolKeyApplet extends Applet {
 
 	private static final byte CM_RSA_NOPAD = 0;
 	private static final byte CM_RSA_PAD_PKCS1 = 1;
-	private static final byte CM_DSA_SHA = 16;
-	private static final byte CM_DES_CBC_NOPAD = 32;
-	private static final byte CM_DES_ECB_NOPAD = 33;
 
 	private static final byte DL_APDU = 1;
 	private static final byte DL_OBJECT = 2;
@@ -392,34 +319,14 @@ public class CoolKeyApplet extends Applet {
 	/**
 	 * List option
 	 */
-	private static final byte LIST_OPT_RESET = 0;
-	private static final byte LIST_OPT_NEXT = 1;
 
-	private static final byte OPT_DEFAULT = 0;
-	private static final byte OPT_RSA_PUB_EXP = 1;
-	private static final byte OPT_DSA_GPQ = 2;
-
-	private static final short OFFSET_GENKEY_ALG = 5;
-	private static final short OFFSET_GENKEY_SIZE = 6;
-	private static final short OFFSET_GENKEY_PRV_ACL = 8;
-	private static final short OFFSET_GENKEY_PUB_ACL = 14;
-	private static final short OFFSET_GENKEY_OPTIONS = 20;
-	private static final short OFFSET_GENKEY_RSA_PUB_EXP_LENGTH = 21;
-	private static final short OFFSET_GENKEY_RSA_PUB_EXP_VALUE = 23;
-	private static final short OFFSET_GENKEY_DSA_GPQ = 21;
-
-	private static final short KEYBLOB_OFFSET_ENCODING = 0;
 	private static final short KEYBLOB_OFFSET_KEY_TYPE = 1;
-	private static final short KEYBLOB_OFFSET_KEY_SIZE = 2;
 	private static final short KEYBLOB_OFFSET_KEY_DATA = 4;
-	private static final short WRAPKEY_OFFSET_TYPE = 4;
 	private static final short WRAPKEY_OFFSET_SIZE = 5;
 	private static final short WRAPKEY_OFFSET_DATA = 6;
 
-	private static final short OFFSET_IMP_KEY_ENC_WRAP_KEY = 5;
 
 	private static final short MAX_RSA_MOD_BITS = 2048;
-	private static final short MAX_RSA_MOD_BYTES = 256;
 
 	// 554 = 2 bytes for explicit length,
 	// 512 bytes for data
@@ -492,7 +399,6 @@ public class CoolKeyApplet extends Applet {
 	private Key[] keys; // persistent
 	private byte[] keyMate; // persistent
 	private OwnerPIN[] pins; // persistent
-	private Signature[] signatures; // persistent
 	private byte[] default_nonce; // persistent
 	private byte[] keyACLs; // persistent
 	private byte[] keyTries; // persistent
@@ -532,7 +438,6 @@ public class CoolKeyApplet extends Applet {
 		keyTries = new byte[MAX_NUM_KEYS];
 		keyPairs = new KeyPair[MAX_NUM_KEYS];
 		ciphers = new Cipher[MAX_NUM_KEYS];
-		signatures = new Signature[MAX_NUM_KEYS];
 		default_nonce = new byte[NONCE_SIZE];
 		issuerInfo = new byte[ISSUER_INFO_SIZE];
 
@@ -634,7 +539,7 @@ public class CoolKeyApplet extends Applet {
 			// Actually copy our issuer info data
 
 			if (issuerLen != 0) {
-				if ((short) issuerLen < ISSUER_INFO_SIZE) {
+				if (issuerLen < ISSUER_INFO_SIZE) {
 					Util.arrayCopyNonAtomic(bArray, bOffset, issuerInfo, ZEROB,
 							issuerLen);
 				} else {
@@ -678,7 +583,7 @@ public class CoolKeyApplet extends Applet {
 			// Sanity check the mem size
 
 			if (customMemSize > 0) {
-				mem_size = (short) customMemSize;
+				mem_size = customMemSize;
 			}
 
 			if (remainingLength <= 0) {
@@ -872,7 +777,6 @@ public class CoolKeyApplet extends Applet {
 		case CD_DECRYPT: {
 			byte ciph_alg_id;
 			byte keyType = key.getType();
-			boolean ignoreSize = false;
 
 			switch (keyType) {
 			case KeyBuilder.TYPE_RSA_PUBLIC:
@@ -925,12 +829,12 @@ public class CoolKeyApplet extends Applet {
 
 			if (size == 0)
 				ciph.init(key,
-						(byte) (ciph_dir == CD_ENCRYPT ? Cipher.MODE_ENCRYPT
-								: Cipher.MODE_DECRYPT));
+						ciph_dir == CD_ENCRYPT ? Cipher.MODE_ENCRYPT
+								: Cipher.MODE_DECRYPT);
 			else
 				ciph.init(key,
-						(byte) (ciph_dir == CD_ENCRYPT ? Cipher.MODE_ENCRYPT
-								: Cipher.MODE_DECRYPT), src_buf,
+						ciph_dir == CD_ENCRYPT ? Cipher.MODE_ENCRYPT
+								: Cipher.MODE_DECRYPT, src_buf,
 								(short) (src_base + 2), size);
 		}
 		break;
@@ -1084,7 +988,7 @@ public class CoolKeyApplet extends Applet {
 
 			if (doubleCheck) {
 				// Use the public key to decrypt
-				Key pubkey = keys[(short) keyMate[key_nb]];
+				Key pubkey = keys[keyMate[key_nb]];
 				// setup cipher object for decrypt
 				ciph.init(pubkey, Cipher.MODE_DECRYPT);
 				// do a decrypt to the original source buffer
@@ -1511,7 +1415,6 @@ public class CoolKeyApplet extends Applet {
 			RSAPublicKey rsa_pub_key = (RSAPublicKey) getKey(mate_nb,
 					KEY_RSA_PUBLIC, key_size);
 			short size, end;
-			short base = offset;
 
 			if (asn1 == null) {
 				asn1 = new ASN1();
@@ -1631,7 +1534,6 @@ public class CoolKeyApplet extends Applet {
 	}
 
 	private void ImportKey(APDU apdu, byte buffer[]) {
-		short bytesLeft = Util.makeShort(ZEROB, buffer[ISO7816.OFFSET_LC]);
 
 		byte key_nb = buffer[ISO7816.OFFSET_P1];
 		byte mate_nb = buffer[ISO7816.OFFSET_P2];
@@ -1697,12 +1599,12 @@ public class CoolKeyApplet extends Applet {
 
 		// set the ACL value
 		Util.arrayCopy(buffer, (short) (ISO7816.OFFSET_CDATA + 4), keyACLs,
-				(short) (key_nb * KEY_ACL_SIZE), (short) KEY_ACL_SIZE);
+				(short) (key_nb * KEY_ACL_SIZE), KEY_ACL_SIZE);
 		if (key_type == KEY_RSA_PKCS8_PAIR) {
 			// set ACL value on public key
 			Util.arrayCopy(buffer,
 					(short) (ISO7816.OFFSET_CDATA + 4 + KEY_ACL_SIZE), keyACLs,
-					(short) (mate_nb * KEY_ACL_SIZE), (short) KEY_ACL_SIZE);
+					(short) (mate_nb * KEY_ACL_SIZE), KEY_ACL_SIZE);
 		}
 
 		Util.arrayFillNonAtomic(keybuf, base, keybuf_size, ZEROB);
@@ -1728,7 +1630,7 @@ public class CoolKeyApplet extends Applet {
 			buffer[2] = keyMate[key_it];
 			Util.setShort(buffer, (short) 3, key.getSize());
 			Util.arrayCopyNonAtomic(keyACLs, (short) (key_it * KEY_ACL_SIZE),
-					buffer, ISO7816.OFFSET_CDATA, (short) KEY_ACL_SIZE);
+					buffer, ISO7816.OFFSET_CDATA, KEY_ACL_SIZE);
 			key_it++;
 			apdu.setOutgoingAndSend((short) 0, (short) 11);
 		}
@@ -1824,13 +1726,6 @@ public class CoolKeyApplet extends Applet {
 		sendData(apdu, buf, (short) (base + offset), size);
 	}
 
-	/**
-	 * Deletes and zeros the IO objects and throws the passed in exception
-	 */
-	private void ThrowDeleteObjects(short exception) {
-		Util.arrayFillNonAtomic(iobuf, ZEROS, iobuf_size, ZEROB);
-		ISOException.throwIt(exception);
-	}
 
 	private void VerifyPIN(APDU apdu, byte buffer[]) {
 		byte pin_nb = buffer[ISO7816.OFFSET_P1];
@@ -2032,7 +1927,7 @@ public class CoolKeyApplet extends Applet {
 		offset++;
 		buf[offset] = (byte) 1; // RSA public key
 		offset++;
-		Util.setShort(buf, offset, (short) (key_size)); // Key Size.
+		Util.setShort(buf, offset, (key_size)); // Key Size.
 		offset += 2;
 
 		RSAPublicKey key = (RSAPublicKey) keys[key_nb];
@@ -2051,7 +1946,6 @@ public class CoolKeyApplet extends Applet {
 		byte prv_key_nb = (byte) (buffer[ISO7816.OFFSET_P1] & 0xf);
 		byte pub_key_nb = (byte) (buffer[ISO7816.OFFSET_P2] & 0xf);
 		byte owner = (byte) ((buffer[ISO7816.OFFSET_P1] >> 4) & 0xf);
-		byte usage = (byte) ((buffer[ISO7816.OFFSET_P2] >> 4) & 0xf);
 		short acl = 0;
 		short key_size = Util.getShort(buffer,
 				(short) (ISO7816.OFFSET_CDATA + 1));
@@ -2062,7 +1956,6 @@ public class CoolKeyApplet extends Applet {
 			prv_key_nb = 0;
 			pub_key_nb = 1;
 			owner = 0xf;
-			usage = 1;
 		}
 		if (owner == 0xf) {
 			acl = ANY_ONE_ACL;
@@ -2101,8 +1994,8 @@ public class CoolKeyApplet extends Applet {
 
 		// copy public key to output object
 		short pubkeysize = outputRSAPublicKey(pub_key_nb, iobuf, (short) 2,
-				(short) key_size);
-		short modsize = (short) ((short) key_size / (short) 8);
+				key_size);
+		short modsize = (short) (key_size / (short) 8);
 
 		Util.setShort(iobuf, ZEROS, pubkeysize);
 
@@ -2115,7 +2008,7 @@ public class CoolKeyApplet extends Applet {
 		// Sign the digest, writing the signature over the digest in the iobuf
 		short sigsize = handSign(prv_key_nb, iobuf,
 				(short) (2 + pubkeysize + modsize),
-				(short) shaDigest.getLength(), iobuf,
+				shaDigest.getLength(), iobuf,
 				(short) (2 + pubkeysize + 2), modsize);
 
 		Util.setShort(iobuf, (short) (2 + pubkeysize), sigsize);
@@ -2148,17 +2041,15 @@ public class CoolKeyApplet extends Applet {
 		outbuf[(short) (outOffset + 1)] = 1;
 		outbuf[outOffset] = 0;
 		Cipher ciph = getCipher(key_nb, Cipher.ALG_RSA_NOPAD);
-		ciph.init(keys[key_nb], (byte) Cipher.MODE_ENCRYPT);
+		ciph.init(keys[key_nb], Cipher.MODE_ENCRYPT);
 		return ciph.doFinal(outbuf, outOffset, modsize, outbuf, outOffset);
 	}
 
 	private void GenerateKeyPairRSA(APDU apdu, byte buffer[], byte prv_key_nb,
 			byte pub_key_nb, short prv_acl) {
 
-		byte alg_id = buffer[ISO7816.OFFSET_CDATA];
 		short key_size = Util.getShort(buffer,
 				(short) (ISO7816.OFFSET_CDATA + 1));
-		byte options = buffer[ISO7816.OFFSET_CDATA + 3];
 
 		//
 		// once we've paired up keys, make sure those keys are always
@@ -2182,21 +2073,21 @@ public class CoolKeyApplet extends Applet {
 
 		// set private key ACLs
 		short index = (short) (prv_key_nb * KEY_ACL_SIZE);
-		Util.setShort(keyACLs, index, (short) NO_ONE_ACL);
+		Util.setShort(keyACLs, index, NO_ONE_ACL);
 		index += 2;
 		// only RA may write
-		Util.setShort(keyACLs, index, (short) RA_ACL);
+		Util.setShort(keyACLs, index, RA_ACL);
 		index += 2;
-		Util.setShort(keyACLs, index, (short) prv_acl);
+		Util.setShort(keyACLs, index, prv_acl);
 
 		// set public key ACLs
 		index = (short) (pub_key_nb * KEY_ACL_SIZE);
-		Util.setShort(keyACLs, index, (short) ANY_ONE_ACL);
+		Util.setShort(keyACLs, index, ANY_ONE_ACL);
 		index += 2;
 		// only RA may write
-		Util.setShort(keyACLs, index, (short) RA_ACL);
+		Util.setShort(keyACLs, index, RA_ACL);
 		index += 2;
-		Util.setShort(keyACLs, index, (short) ANY_ONE_ACL);
+		Util.setShort(keyACLs, index, ANY_ONE_ACL);
 
 		if (pub_key.isInitialized())
 			pub_key.clearKey();
@@ -2219,7 +2110,6 @@ public class CoolKeyApplet extends Applet {
 		byte prv_key_nb = (byte) (buffer[ISO7816.OFFSET_P1] & 0xf);
 		byte pub_key_nb = (byte) (buffer[ISO7816.OFFSET_P2] & 0xf);
 		byte owner = (byte) ((buffer[ISO7816.OFFSET_P1] >> 4) & 0xf);
-		byte usage = (byte) ((buffer[ISO7816.OFFSET_P2] >> 4) & 0xf);
 		short acl = 0;
 		short obj_class = Util.getShort(buffer, ISO7816.OFFSET_CDATA);
 		short obj_id = Util
@@ -2268,7 +2158,7 @@ public class CoolKeyApplet extends Applet {
 		// length of Check
 		// 1 byte length
 		// n-byte check value
-		short checkOffset = (short) (WRAPKEY_OFFSET_DATA + (int) desLength);
+		short checkOffset = (short) (WRAPKEY_OFFSET_DATA + desLength);
 		if (available <= checkOffset) {
 			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 		}
@@ -2276,7 +2166,7 @@ public class CoolKeyApplet extends Applet {
 				buffer[(short) (ISO7816.OFFSET_CDATA + checkOffset)]);
 
 		// iv
-		short ivOffset = (short) (checkOffset + 1 + (int) checkLength);
+		short ivOffset = (short) (checkOffset + 1 + checkLength);
 		if (available <= ivOffset) {
 			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 		}
@@ -2380,21 +2270,21 @@ public class CoolKeyApplet extends Applet {
 
 		// set private key ACLs
 		short index = (short) (prv_key_nb * KEY_ACL_SIZE);
-		Util.setShort(keyACLs, index, (short) NO_ONE_ACL);
+		Util.setShort(keyACLs, index, NO_ONE_ACL);
 		index += 2;
 		// only RA may write
-		Util.setShort(keyACLs, index, (short) RA_ACL);
+		Util.setShort(keyACLs, index, RA_ACL);
 		index += 2;
-		Util.setShort(keyACLs, index, (short) acl);
+		Util.setShort(keyACLs, index, acl);
 		if (key_type == KEY_RSA_PKCS8_PAIR) {
 			// set public key ACLs
 			index = (short) (pub_key_nb * KEY_ACL_SIZE);
-			Util.setShort(keyACLs, index, (short) ANY_ONE_ACL);
+			Util.setShort(keyACLs, index, ANY_ONE_ACL);
 			index += 2;
 			// only RA may write
-			Util.setShort(keyACLs, index, (short) RA_ACL);
+			Util.setShort(keyACLs, index, RA_ACL);
 			index += 2;
-			Util.setShort(keyACLs, index, (short) ANY_ONE_ACL);
+			Util.setShort(keyACLs, index, ANY_ONE_ACL);
 		}
 	}
 
@@ -2584,15 +2474,6 @@ public class CoolKeyApplet extends Applet {
 	}
 
 	/**
-	 * Check from ACL if a key can be read
-	 */
-	private boolean authorizeKeyRead(byte key_nb) {
-		short acl_offset = (short) (key_nb * KEY_ACL_SIZE);
-		short required_ids = Util.getShort(keyACLs, acl_offset);
-		return (required_ids & authenticated_id) != 0;
-	}
-
-	/**
 	 * Check from ACL if a key can be used
 	 */
 	private boolean authorizeKeyUse(byte key_nb) {
@@ -2666,13 +2547,6 @@ public class CoolKeyApplet extends Applet {
 		return 0;
 	}
 
-	private Signature getSignature(byte key_nb, byte alg_id) {
-		if (signatures[key_nb] == null)
-			signatures[key_nb] = Signature.getInstance(alg_id, false);
-		else if (signatures[key_nb].getAlgorithm() != alg_id)
-			ISOException.throwIt(SW_OPERATION_NOT_ALLOWED);
-		return signatures[key_nb];
-	}
 
 	public static void install(byte bArray[], short bOffset, byte bLength) {
 		CoolKeyApplet wal = new CoolKeyApplet(bArray, bOffset, bLength);
@@ -3129,9 +3003,9 @@ public class CoolKeyApplet extends Applet {
 		public boolean clampObject(short type, short id, short new_size) {
 			short base = getEntry(type, id);
 			if (base == -1)
-				ISOException.throwIt((short) SW_OBJECT_NOT_FOUND);
+				ISOException.throwIt(SW_OBJECT_NOT_FOUND);
 			if (mem.realloc(base, (short) (new_size + RECORD_SIZE))) {
-				mem.setShort(base, (short) OBJ_H_SIZE, new_size);
+				mem.setShort(base, OBJ_H_SIZE, new_size);
 				return true;
 			} else {
 				return false;
@@ -3151,7 +3025,7 @@ public class CoolKeyApplet extends Applet {
 		public boolean compareACLFromAddress(short base, byte acl[]) {
 			return Util.arrayCompare(mem.getBuffer(),
 					(short) ((base - OBJ_HEADER_SIZE) + OBJ_H_ACL), acl,
-					(short) 0, (short) OBJ_ACL_SIZE) == 0;
+					(short) 0, OBJ_ACL_SIZE) == 0;
 		}
 
 		/**
@@ -3180,13 +3054,13 @@ public class CoolKeyApplet extends Applet {
 				ISOException.throwIt(SW_OBJECT_EXISTS);
 			short base = mem.alloc((short) (size + OBJ_HEADER_SIZE));
 			if (base == -1)
-				ISOException.throwIt((short) SW_NO_MEMORY_LEFT);
-			mem.setShort(base, (short) OBJ_H_NEXT, obj_list_head);
-			mem.setShort(base, (short) OBJ_H_CLASS, type);
-			mem.setShort(base, (short) OBJ_H_ID, id);
-			mem.setShort(base, (short) OBJ_H_SIZE, size);
-			mem.setBytes(base, (short) OBJ_H_ACL, acl_buf, acl_offset,
-					(short) OBJ_ACL_SIZE);
+				ISOException.throwIt(SW_NO_MEMORY_LEFT);
+			mem.setShort(base, OBJ_H_NEXT, obj_list_head);
+			mem.setShort(base, OBJ_H_CLASS, type);
+			mem.setShort(base, OBJ_H_ID, id);
+			mem.setShort(base, OBJ_H_SIZE, size);
+			mem.setBytes(base, OBJ_H_ACL, acl_buf, acl_offset,
+					OBJ_ACL_SIZE);
 			obj_list_head = base;
 			return (short) (base + OBJ_H_DATA);
 		}
@@ -3198,7 +3072,7 @@ public class CoolKeyApplet extends Applet {
 				short acl_offset) {
 			short obj_size = mem.getMaxSize();
 			if (obj_size == 0)
-				ISOException.throwIt((short) SW_NO_MEMORY_LEFT);
+				ISOException.throwIt(SW_NO_MEMORY_LEFT);
 			return createObject(type, id, (short) (obj_size - OBJ_H_DATA),
 					acl_buf, acl_offset);
 		}
@@ -3220,8 +3094,8 @@ public class CoolKeyApplet extends Applet {
 				short prev = -1;
 
 				for (found = false; !found && curr != -1;) {
-					if (mem.getShort(curr, (short) OBJ_H_CLASS) == type
-							&& mem.getShort(curr, (short) OBJ_H_ID) == id) {
+					if (mem.getShort(curr, OBJ_H_CLASS) == type
+							&& mem.getShort(curr, OBJ_H_ID) == id) {
 						found = true;
 					} else {
 						prev = curr;
@@ -3237,7 +3111,7 @@ public class CoolKeyApplet extends Applet {
 					if (secure) {
 						Util.arrayFillNonAtomic(mem.getBuffer(),
 								(short) (curr + OBJ_H_DATA),
-								mem.getShort(curr, (short) OBJ_H_SIZE),
+								mem.getShort(curr, OBJ_H_SIZE),
 								(byte) 0);
 					}
 					mem.free(curr);
@@ -3313,8 +3187,8 @@ public class CoolKeyApplet extends Applet {
 		private short getEntry(short type, short id) {
 			for (short base = obj_list_head; base != -1; base = mem.getShort(
 					base, (short) 0)) {
-				if (mem.getShort(base, (short) OBJ_H_CLASS) == type
-						&& mem.getShort(base, (short) OBJ_H_ID) == id)
+				if (mem.getShort(base, OBJ_H_CLASS) == type
+						&& mem.getShort(base, OBJ_H_ID) == id)
 					return base;
 			}
 			return -1;
@@ -3357,13 +3231,13 @@ public class CoolKeyApplet extends Applet {
 			} else {
 				Util.setShort(buffer, offset, mem.getShort(it, (short) 2));
 				Util.setShort(buffer, (short) (offset + 2),
-						mem.getShort(it, (short) OBJ_H_ID));
+						mem.getShort(it, OBJ_H_ID));
 				Util.setShort(buffer, (short) (offset + 4), (short) 0);
 				Util.setShort(buffer, (short) (offset + 6),
-						mem.getShort(it, (short) OBJ_H_SIZE));
+						mem.getShort(it, OBJ_H_SIZE));
 				Util.arrayCopyNonAtomic(mem.getBuffer(),
 						(short) (it + OBJ_H_ACL), buffer, (short) (offset + 8),
-						(short) OBJ_ACL_SIZE);
+						OBJ_ACL_SIZE);
 				it = mem.getShort(it, (short) 0);
 				return true;
 			}
@@ -3376,15 +3250,6 @@ public class CoolKeyApplet extends Applet {
 			return mem.getShort((short) ((base - OBJ_H_DATA) + OBJ_H_SIZE));
 		}
 
-		/**
-		 * Set the object's ACL.
-		 */
-		private void setACL(short type, short id, byte acl_buf[],
-				short acl_offset) {
-			short base = getEntry(type, id);
-			mem.setBytes(base, (short) OBJ_H_ACL, acl_buf, acl_offset,
-					(short) OBJ_ACL_SIZE);
-		}
 	}
 
 	/**
@@ -3456,7 +3321,7 @@ public class CoolKeyApplet extends Applet {
 			} else {
 				ptr = new byte[mem_size];
 				Util.setShort(ptr, (short) 0, mem_size);
-				Util.setShort(ptr, (short) 2, (short) NULL_OFFSET);
+				Util.setShort(ptr, (short) 2, NULL_OFFSET);
 				free_head = 0;
 				return;
 			}
@@ -3898,8 +3763,6 @@ public class CoolKeyApplet extends Applet {
 
 		public short Signed2Unsigned(byte buf[], short offset, short end,
 				short dbg) {
-			short startOffset = offset;
-			short startSize = params[SIZE];
 			for (; offset < end && buf[offset] == 0; offset++) {
 				params[SIZE]--;
 			}

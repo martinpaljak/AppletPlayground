@@ -176,9 +176,6 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 	private final static byte ALG_RSA = (byte) 0x00;
 	private final static byte ALG_RSA_CRT = (byte) 0x01;
 	private final static byte ALG_DSA = (byte) 0x02;
-	private final static byte ALG_DES = (byte) 0x03;
-	private final static byte ALG_3DES = (byte) 0x04;
-	private final static byte ALG_3DES3 = (byte) 0x05;
 
 	// Key Type in Key Blobs
 	private final static byte KEY_RSA_PUBLIC = (byte) 0x01;
@@ -220,14 +217,13 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 	private final static byte OPT_DSA_GPQ = (byte) 0x02; // DSA: provide p,q,g public key parameters
 
 	// Offsets in buffer[] for key generation
-	private final static short OFFSET_GENKEY_ALG = (short) (ISO7816.OFFSET_CDATA);
+	private final static short OFFSET_GENKEY_ALG = (ISO7816.OFFSET_CDATA);
 	private final static short OFFSET_GENKEY_SIZE = (short) (ISO7816.OFFSET_CDATA + 1);
 	private final static short OFFSET_GENKEY_PRV_ACL = (short) (ISO7816.OFFSET_CDATA + 3);
 	private final static short OFFSET_GENKEY_PUB_ACL = (short) (OFFSET_GENKEY_PRV_ACL + KEY_ACL_SIZE);
 	private final static short OFFSET_GENKEY_OPTIONS = (short) (OFFSET_GENKEY_PUB_ACL + KEY_ACL_SIZE);
 	private final static short OFFSET_GENKEY_RSA_PUB_EXP_LENGTH = (short) (OFFSET_GENKEY_OPTIONS + 1);
 	private final static short OFFSET_GENKEY_RSA_PUB_EXP_VALUE = (short) (OFFSET_GENKEY_RSA_PUB_EXP_LENGTH + 2);
-	private final static short OFFSET_GENKEY_DSA_GPQ = (short) (OFFSET_GENKEY_OPTIONS + 1);
 
 	/****************************************
 	 * Instance variables declaration *
@@ -293,7 +289,7 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 		if (bArray[bOffset] == 0)
 			wal.register();
 		else
-			wal.register(bArray, (short) (bOffset + 1), (byte) (bArray[bOffset]));
+			wal.register(bArray, (short) (bOffset + 1), (bArray[bOffset]));
 	}
 
 	public boolean select() {
@@ -345,10 +341,10 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 			ISOException.throwIt(ISO7816.SW_CLA_NOT_SUPPORTED);
 
 		byte ins = buffer[ISO7816.OFFSET_INS];
-		if (!setupDone && (ins != (byte) INS_SETUP))
+		if (!setupDone && (ins != INS_SETUP))
 			ISOException.throwIt(SW_UNSUPPORTED_FEATURE);
 
-		if (setupDone && (ins == (byte) INS_SETUP))
+		if (setupDone && (ins == INS_SETUP))
 			ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
 
 		switch (ins) {
@@ -429,7 +425,7 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 		if (bytesLeft != apdu.setIncomingAndReceive())
 			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-		short base = (short) (ISO7816.OFFSET_CDATA);
+		short base = (ISO7816.OFFSET_CDATA);
 
 		byte numBytes = buffer[base++];
 
@@ -495,19 +491,19 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 		create_key_ACL = buffer[base++];
 		create_pin_ACL = buffer[base++];
 
-		mem = new MemoryManager((short) mem_size);
+		mem = new MemoryManager(mem_size);
 		om = new ObjectManager(mem);
 
 		keys = new Key[MAX_NUM_KEYS];
 		keyACLs = new byte[(short) (MAX_NUM_KEYS * KEY_ACL_SIZE)];
 		keyTries = new byte[MAX_NUM_KEYS];
-		for (byte i = (byte) 0; i < (byte) MAX_NUM_KEYS; i++)
+		for (byte i = (byte) 0; i < MAX_NUM_KEYS; i++)
 			keyTries[i] = MAX_KEY_TRIES;
 		keyPairs = new KeyPair[MAX_NUM_KEYS];
 		ciphers = new Cipher[MAX_NUM_KEYS];
 		signatures = new Signature[MAX_NUM_KEYS];
 		ciph_dirs = new byte[MAX_NUM_KEYS];
-		for (byte i = (byte) 0; i < (byte) MAX_NUM_KEYS; i++)
+		for (byte i = (byte) 0; i < MAX_NUM_KEYS; i++)
 			ciph_dirs[i] = (byte) 0xFF;
 
 		logged_ids = 0x00; // No identities logged in
@@ -515,13 +511,13 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 		randomData = null; // Will be created on demand when needed
 
 		STD_PUBLIC_ACL = new byte[KEY_ACL_SIZE];
-		for (byte i = (byte) 0; i < (byte) KEY_ACL_SIZE; i += (short) 2)
+		for (byte i = (byte) 0; i < KEY_ACL_SIZE; i += (short) 2)
 			Util.setShort(STD_PUBLIC_ACL, i, (short) 0x0000);
 
 		// Initialize the extended APDU buffer
 		try {
 			// Try to allocate the extended APDU buffer on RAM memory
-			recvBuffer = JCSystem.makeTransientByteArray((short) EXT_APDU_BUFFER_SIZE, JCSystem.CLEAR_ON_DESELECT);
+			recvBuffer = JCSystem.makeTransientByteArray(EXT_APDU_BUFFER_SIZE, JCSystem.CLEAR_ON_DESELECT);
 		} catch (SystemException e) {
 			// Allocate the extended APDU buffer on EEPROM memory
 			// This is the fallback method, but its usage is really not
@@ -1646,7 +1642,7 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 			ISOException.throwIt(SW_INVALID_PARAMETER);
 		if (pin.getTriesRemaining() == (byte) 0x00)
 			ISOException.throwIt(SW_IDENTITY_BLOCKED);
-		if (!pin.check(buffer, (short) ISO7816.OFFSET_CDATA, (byte) numBytes)) {
+		if (!pin.check(buffer, ISO7816.OFFSET_CDATA, (byte) numBytes)) {
 			LogoutIdentity(pin_nb);
 			ISOException.throwIt(SW_AUTH_FAILED);
 		}
@@ -1799,7 +1795,7 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 		short obj_id = Util.getShort(buffer, (short) (ISO7816.OFFSET_CDATA + (short) 2));
 		// Skip 2 M.S.Bytes of the offset
 		short offset = Util.getShort(buffer, (short) (ISO7816.OFFSET_CDATA + (short) 6));
-		short size = Util.makeShort((byte) 0x00, buffer[(short) ISO7816.OFFSET_CDATA + (short) 8]);
+		short size = Util.makeShort((byte) 0x00, buffer[ISO7816.OFFSET_CDATA + (short) 8]);
 		short base = om.getBaseAddress(obj_class, obj_id);
 		// Verify that object exists
 		if (base == MemoryManager.NULL_OFFSET)
@@ -1862,7 +1858,7 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 			ISOException.throwIt(SW_INCORRECT_P1);
 		if (buffer[ISO7816.OFFSET_P2] != (byte) 0x00)
 			ISOException.throwIt(SW_INCORRECT_P2);
-		byte expectedBytes = (byte) (buffer[ISO7816.OFFSET_LC]);
+		byte expectedBytes = (buffer[ISO7816.OFFSET_LC]);
 		if (expectedBytes != (short) 2)
 			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 		// Build the PIN bit mask
@@ -1881,7 +1877,7 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 		// Checking P1 & P2
 		if (buffer[ISO7816.OFFSET_P2] != (byte) 0x00)
 			ISOException.throwIt(SW_INCORRECT_P2);
-		byte expectedBytes = (byte) (buffer[ISO7816.OFFSET_LC]);
+		byte expectedBytes = (buffer[ISO7816.OFFSET_LC]);
 		if (expectedBytes < ObjectManager.RECORD_SIZE)
 			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 		boolean found = false; // Suppress compiler warning
@@ -1892,7 +1888,7 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 		else
 			found = om.getNextRecord(buffer, (short) 0);
 		if (found)
-			apdu.setOutgoingAndSend((short) 0, (short) ObjectManager.RECORD_SIZE);
+			apdu.setOutgoingAndSend((short) 0, ObjectManager.RECORD_SIZE);
 		else
 			ISOException.throwIt(SW_SEQUENCE_END);
 	}
@@ -2177,7 +2173,6 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 		private final static byte OBJ_H_ID = (byte) 4; // Short obj_id;
 		private final static byte OBJ_H_ACL = (byte) 6; // Byte[OBJ_ACL_SIZE] acl;
 		private final static byte OBJ_H_SIZE = (byte) 12; // Short size;
-		private final static byte OBJ_H_DATA = (byte) 14;
 
 		/** There have been memory problems on the card */
 		public final static short SW_NO_MEMORY_LEFT = (short) 0x9C01;
@@ -2276,7 +2271,7 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 		 */
 		public boolean clampObject(short type, short id, short new_size) {
 			short base = getEntry(type, id);
-			if (base == (short) MemoryManager.NULL_OFFSET)
+			if (base == MemoryManager.NULL_OFFSET)
 				ISOException.throwIt((short) 0x9C07);
 			// Delegate every check to the Memory Manager
 			if (mem.realloc(base, (short) (new_size + OBJ_HEADER_SIZE))) {
@@ -2284,12 +2279,6 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 				return true;
 			}
 			return false;
-		}
-
-		/** Set the object's ACL. Unused at the moment. */
-		private void setACL(short type, short id, byte[] acl_buf, short acl_offset) {
-			short base = getEntry(type, id);
-			mem.setBytes(base, OBJ_H_ACL, acl_buf, acl_offset, OBJ_ACL_SIZE);
 		}
 
 		/**
@@ -2513,7 +2502,7 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 			// Setting Size's M.S.Short to zero.
 			Util.setShort(buffer, (short) (offset + 4), (short) 0);
 			// Setting Size's L.S.Short
-			Util.setShort(buffer, (short) (offset + 6), mem.getShort(it, (short) OBJ_H_SIZE));
+			Util.setShort(buffer, (short) (offset + 6), mem.getShort(it, OBJ_H_SIZE));
 			// Setting ACL
 			Util.arrayCopyNonAtomic(mem.getBuffer(), (short) (it + OBJ_H_ACL), buffer, (short) (offset + 8), OBJ_ACL_SIZE);
 			// Advance iterator
@@ -2594,9 +2583,9 @@ public class MuscleApplet extends javacard.framework.Applet implements ExtendedL
 			ptr = new byte[mem_size];
 			// Setup the free memory list
 			// set the size
-			Util.setShort(ptr, (short) 0, (short) mem_size);
+			Util.setShort(ptr, (short) 0, mem_size);
 			// set the pointer to EndOfList
-			Util.setShort(ptr, (short) 2, (short) NULL_OFFSET);
+			Util.setShort(ptr, (short) 2, NULL_OFFSET);
 			// set the pointer to the head node
 			free_head = (short) 0;
 		}

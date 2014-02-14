@@ -1,0 +1,14 @@
+language: java
+jdk:
+  - openjdk7
+script: ant compile_sources
+
+addons:
+  coverity_scan:
+    project:
+      name: "martinpaljak/AppletPlayground"
+      description: "Applet PLayground"
+    notification_email: martin@martinpaljak.net
+    build_command_prepend:
+    build_command: ant compile_sources
+    branch_pattern: coverity_scan

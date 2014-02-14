@@ -3,6 +3,12 @@ jdk:
   - openjdk7
 script: ant compile_sources
 
+env:
+  global:
+   # The next declration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "Bic6Pmjyfj/WG5OK+XtgcogE8Qn9eD1UTwB+WQ+E5TZSgmcb02wzNFvma9d9+ZsgTnLPPPK0PIeVGuf5tc2Vff4Cn9vByxEDZ38fQNoHZJD78pTTUlFIJk1nu7NNozmlplHjRp46/TBDnPem6LcMK+WywS9YXs3MKhVr602ZytY="
+
 addons:
   coverity_scan:
     project:
@@ -11,4 +17,5 @@ addons:
     notification_email: martin@martinpaljak.net
     build_command_prepend:
     build_command: ant compile_sources
-    branch_pattern: coverity_scan
+    branch_pattern: coverity
+

@@ -294,12 +294,6 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 			case (byte) 0xF1:
 				le = Util.arrayCopy(VERSION, _0, buffer, _0, (short) VERSION.length);
 			break;
-			// GET VERSION (vendor specific)
-			case (byte) 0xFE:
-
-				le = Util.arrayCopy(VERSION, _0, buffer, _0, (short) VERSION.length);
-			apdu.setOutgoingAndSend((short)0, le);
-			break;
 			default:
 				// good practice: If you don't know the INStruction, say so:
 				ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);

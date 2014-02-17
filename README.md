@@ -13,16 +13,18 @@ AppletPlayground is an easy method for getting to know JavaCard development. Eve
  * PKIApplet - [r65](http://svn.code.sf.net/p/javacardsign/code/!svn/bc/65/pkiapplet/src/) from http://svn.code.sf.net/p/javacardsign/code/pkiapplet/src (LGPL2.1)
  * OpenPGPApplet - [Yubico/ykneo-openpgp@ed928351994b053f3d87ec00ec4a9696d4ff20fe](https://github.com/Yubico/ykneo-openpgp/commit/ed928351994b053f3d87ec00ec4a9696d4ff20fe) (GPL2)
  * FluffyPGPApplet - [FluffyKaon/OpenPGP-Card@545da17f82ff4627758674bbcbb0e602e959d9dd](https://github.com/FluffyKaon/OpenPGP-Card/commit/545da17f82ff4627758674bbcbb0e602e959d9dd) (GPL3)
+ * YkneoOath - [Yubico/ykneo-oath](https://github.com/Yubico/ykneo-oath/) (GPL3)
+ * PassportApplet - http://sourceforge.net/p/jmrtd/code/HEAD/tree/trunk/passportapplet/ (LGPL3)
 
 The following changes have been applied to source code of applets:
  * change of the package name to ```pro.javacard.applets```
- * move of dependant classes to inner classes (as Muscle and CoolKey would conflict, the same "consolidation" was applied to other applets)
+ * move of dependant classes to inner classes (as Muscle and CoolKey would conflict, the same "consolidation" was applied to other applets) or otherwise renaming classes.
  * ```GPSystem```->```OPSystem``` 
- * missing casts to short
+ * obvious errors and warnings as reported by FindBugs and Coverity (or missing casts to short)
  * code formatting if done automagically by eclipse formatter.
 
 # FEASIBILITY NOTICE
- The above applets and the overall package come "as-is". I make no claims about the feasibility, usability, security, correctness whatsoever of the whole package or any of the components. Use at your own risk. Everything here is only for educational purposes.
+ The above applets and the overall package come "AS-IS". I make no claims about the feasibility, usability, security, correctness whatsoever of the whole package or any of the components. Use at your own risk. Everything here is only for educational purposes.
 
 ## What you need ?
  * Unix-like operating system like a recent Linux or OS X with installed JDK 1.7+
@@ -50,10 +52,9 @@ The following changes have been applied to source code of applets:
    * Automatic code hardening with http://sourceforge.net/projects/cesta/ (BSD)
    * Card simulation with [jCardSim](https://github.com/licel/jcardsim)* (Apache 2.0) <sub>currently only supports JavaCard 2.2.1 :(</sub>
  * More applets:
-   * ykneo-oath - https://github.com/Yubico/ykneo-oath/ (GPL3)
    * BTChipApplet - https://github.com/btchip/btchipJC (AGPL3) <sub>Depends on JavaCard 3 support</sub>
-   * ICAOPassportApplet - http://sourceforge.net/p/jmrtd/code/HEAD/tree/trunk/passportapplet/ (LGPL3)
-   * FakeEstEID - Estonian ID-card compatible applet (BSD)
+   * [FakeEstEID](https://github.com/martinpaljak/AppletPlayground/wiki/FakeEstEID) - Estonian ID-card compatible applet (MIT)
+   * EchoApplet, TraceApplet, RandomApplet, StorageApplet
    * If you want to see more applets in the build set, file an issue with link!
  * More flexible build (Grails?)
 

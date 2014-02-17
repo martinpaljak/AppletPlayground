@@ -246,7 +246,7 @@ public class PassportApplet extends Applet implements ISO7816 {
 			return;
 		}
 
-		if (protectedApdu & hasMutuallyAuthenticated()) {
+		if (protectedApdu && hasMutuallyAuthenticated()) {
 			try {
 				le = crypto.unwrapCommandAPDU(ssc, apdu);
 			} catch (CardRuntimeException e) {
@@ -637,7 +637,6 @@ public class PassportApplet extends Applet implements ISO7816 {
 		short m1m2hash_offset = (short) (m1_offset + m1_len);
 		short m1m2hash_len = 20;
 		short trailer_offset = (short) (m1m2hash_offset + m1m2hash_len);
-		short trailer_len = 1;
 
 		byte[] buffer = apdu.getBuffer();
 		short bytesLeft = (short) (buffer[OFFSET_LC] & 0x00FF);
@@ -666,14 +665,9 @@ public class PassportApplet extends Applet implements ISO7816 {
 		buffer[hdr_offset] = (byte) 0x6a;
 
 		// encrypt the whole buffer with our AA private key
-		short plaintext_len = (short) (hdr_len + m1_len + m1m2hash_len + trailer_len);
-		// sanity check
-		if (plaintext_len != 128) {
-			ISOException.throwIt(SW_INTERNAL_ERROR);
-		}
 		crypto.rsaCiph.init(keyStore.rsaPrivateKey, Cipher.MODE_ENCRYPT);
 		short ciphertext_len = crypto.rsaCiph.doFinal(buffer, hdr_offset,
-				plaintext_len, buffer, hdr_offset);
+				(short)128, buffer, hdr_offset);
 		// sanity check
 		if (ciphertext_len != 128) {
 			ISOException.throwIt(SW_INTERNAL_ERROR);
@@ -865,7 +859,7 @@ public class PassportApplet extends Applet implements ISO7816 {
 	 *            where the first 2 data bytes encode the file to select.
 	 */
 	private void processSelectFile(APDU apdu) {
-		if (isLocked() & !hasMutuallyAuthenticated()) {
+		if (isLocked() && !hasMutuallyAuthenticated()) {
 			ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
 		}
 

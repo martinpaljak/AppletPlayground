@@ -275,7 +275,6 @@ public class PassportCrypto {
 		byte[] buf = apdu.getBuffer();
 		short apdu_p = (short) (ISO7816.OFFSET_CDATA & 0xff);
 		short start_p = apdu_p;
-		short lc = (short) (buf[ISO7816.OFFSET_LC] & 0xff);
 		short le = 0;
 		short do87DataLen = 0;
 		short do87Data_p = 0;
@@ -342,21 +341,20 @@ public class PassportCrypto {
 			ISOException.throwIt(ISO7816.SW_CONDITIONS_NOT_SATISFIED);
 		}
 
-		short plaintextLength = 0;
 		short plaintextLc = 0;
 		if (do87DataLen != 0) {
 			// decrypt data, and leave room for lc
 			decryptInit();
-					plaintextLength = decryptFinal(buf,
-							do87Data_p,
-							do87DataLen,
-							buf,
-							(short) (hdrLen + 1));
+			decryptFinal(buf,
+					do87Data_p,
+					do87DataLen,
+					buf,
+					(short) (hdrLen + 1));
 
-					plaintextLc = PassportUtil.calcLcFromPaddedData(buf,
-							(short) (hdrLen + 1),
-							do87DataLen);
-					buf[hdrLen] = (byte) (plaintextLc & 0xff);
+			plaintextLc = PassportUtil.calcLcFromPaddedData(buf,
+					(short) (hdrLen + 1),
+					do87DataLen);
+			buf[hdrLen] = (byte) (plaintextLc & 0xff);
 		}
 
 		return le;
@@ -571,55 +569,55 @@ public class PassportCrypto {
 	 *
 	 * @return true when authentication successful
 	 */
-	 public boolean authenticateChip(byte[] pubData, short offset, short length) {
-		 try {
-			 // Verify public key first. i.e. see if the data is correct and
-			 // makes up a valid
-			 // EC public key.
-			 keyStore.ecPublicKey.setW(pubData, offset, length);
-			 if (!keyStore.ecPublicKey.isInitialized()) {
-				 CryptoException.throwIt(CryptoException.ILLEGAL_VALUE);
-			 }
+	public boolean authenticateChip(byte[] pubData, short offset, short length) {
+		try {
+			// Verify public key first. i.e. see if the data is correct and
+			// makes up a valid
+			// EC public key.
+			keyStore.ecPublicKey.setW(pubData, offset, length);
+			if (!keyStore.ecPublicKey.isInitialized()) {
+				CryptoException.throwIt(CryptoException.ILLEGAL_VALUE);
+			}
 
-			 // Do the key agreement and derive new session keys based on the
-			 // outcome:
-			 keyAgreement.init(keyStore.ecPrivateKey);
-			 short secOffset = (short) (offset + length);
-			 short secLength = keyAgreement.generateSecret(pubData, offset,
-					 length, pubData, secOffset);
-			 // use only first 16 bytes?
-			 // secLength = 16;
-			 short keysOffset = (short) (secOffset + secLength);
-			 deriveKey(pubData, secOffset, secLength, MAC_MODE, keysOffset);
-			 short macKeyOffset = keysOffset;
-			 keysOffset += PassportApplet.KEY_LENGTH;
-			 deriveKey(pubData, secOffset, secLength, ENC_MODE, keysOffset);
-			 short encKeyOffset = keysOffset;
-			 Util.arrayCopyNonAtomic(pubData, macKeyOffset, keyStore.tmpKeys,
-					 (short) 0, PassportApplet.KEY_LENGTH);
-			 Util.arrayCopyNonAtomic(pubData, encKeyOffset, keyStore.tmpKeys,
-					 PassportApplet.KEY_LENGTH, PassportApplet.KEY_LENGTH);
-			 // The secure messaging keys should be replaced with the freshly
-			 // computed ones
-			 // just after the current APDU is completely processed.
-			 eacChangeKeys[0] = true;
-			 return true;
-		 } catch (Exception e) {
-			 eacChangeKeys[0] = false;
-			 return false;
+			// Do the key agreement and derive new session keys based on the
+			// outcome:
+			keyAgreement.init(keyStore.ecPrivateKey);
+			short secOffset = (short) (offset + length);
+			short secLength = keyAgreement.generateSecret(pubData, offset,
+					length, pubData, secOffset);
+			// use only first 16 bytes?
+			// secLength = 16;
+			short keysOffset = (short) (secOffset + secLength);
+			deriveKey(pubData, secOffset, secLength, MAC_MODE, keysOffset);
+			short macKeyOffset = keysOffset;
+			keysOffset += PassportApplet.KEY_LENGTH;
+			deriveKey(pubData, secOffset, secLength, ENC_MODE, keysOffset);
+			short encKeyOffset = keysOffset;
+			Util.arrayCopyNonAtomic(pubData, macKeyOffset, keyStore.tmpKeys,
+					(short) 0, PassportApplet.KEY_LENGTH);
+			Util.arrayCopyNonAtomic(pubData, encKeyOffset, keyStore.tmpKeys,
+					PassportApplet.KEY_LENGTH, PassportApplet.KEY_LENGTH);
+			// The secure messaging keys should be replaced with the freshly
+			// computed ones
+			// just after the current APDU is completely processed.
+			eacChangeKeys[0] = true;
+			return true;
+		} catch (Exception e) {
+			eacChangeKeys[0] = false;
+			return false;
 
-		 }
-	 }
+		}
+	}
 
-	 boolean eacVerifySignature(RSAPublicKey key, byte[] rnd,
-			 byte[] docNr, byte[] buffer, short offset, short length) {
-		 short x_offset = (short)(offset+length);
-		 keyStore.ecPublicKey.getW(buffer, x_offset++);
-		 rsaSig.init(key, Signature.MODE_VERIFY);
-		 rsaSig.update(docNr, (short) 0, (short) docNr.length);
-		 rsaSig.update(rnd, (short) 0, PassportApplet.RND_LENGTH);
-		 return rsaSig.verify(buffer, x_offset, EC_X_LENGTH, buffer, offset, length);
-	 }
+	boolean eacVerifySignature(RSAPublicKey key, byte[] rnd,
+			byte[] docNr, byte[] buffer, short offset, short length) {
+		short x_offset = (short)(offset+length);
+		keyStore.ecPublicKey.getW(buffer, x_offset++);
+		rsaSig.init(key, Signature.MODE_VERIFY);
+		rsaSig.update(docNr, (short) 0, (short) docNr.length);
+		rsaSig.update(rnd, (short) 0, PassportApplet.RND_LENGTH);
+		return rsaSig.verify(buffer, x_offset, EC_X_LENGTH, buffer, offset, length);
+	}
 
 
 }

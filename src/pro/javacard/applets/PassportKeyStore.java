@@ -39,8 +39,8 @@ public class PassportKeyStore {
 	public static final byte KEY_A = 0;
 	public static final byte KEY_B = 1;
 
-	private DESKey sm_kMac_a, sm_kMac_b, sm_kMac;
-	private DESKey ma_kMac_a, ma_kMac_b, ma_kMac;
+	private DESKey sm_kMac;
+	private DESKey ma_kMac;
 	private DESKey ma_kEnc, sm_kEnc;
 	RSAPrivateKey rsaPrivateKey;
 	RSAPublicKey rsaPublicKey;
@@ -81,25 +81,6 @@ public class PassportKeyStore {
 		}
 		else {
 			return ma_kMac;
-		}
-	}
-
-	public DESKey getMacKey(byte aOrb) {
-		if(PassportApplet.hasMutuallyAuthenticated()) {
-			if(aOrb == KEY_A) {
-				return sm_kMac_a;
-			}
-			else {
-				return sm_kMac_b;
-			}
-		}
-		else {
-			if(aOrb == KEY_A) {
-				return ma_kMac_a;
-			}
-			else {
-				return ma_kMac_b;
-			}
 		}
 	}
 

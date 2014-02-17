@@ -60,6 +60,13 @@
       <param name="package.aid" value="0xa0:0x00:0x00:0x05:0x27:0x21:0x01"/>
       <param name="applet.aid" value="0xa0:0x00:0x00:0x05:0x27:0x21:0x01:0x01"/>
     </antcall>
+    <!-- Build the PassportApplet  -->
+    <antcall target="create_applet">
+      <param name="applet.name" value="PassportApplet"/>
+      <param name="applet.version" value="0.1"/>
+      <param name="package.aid" value="0xA0:0x00:0x00:0x02:0x47:0x10"/>
+      <param name="applet.aid" value="0xA0:0x00:0x00:0x02:0x47:0x10:0x01"/>
+    </antcall>
   </target>
   <!-- No modification needed below this line -->
   <loadresource property="PACKAGE_PATH">

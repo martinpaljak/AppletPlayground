@@ -1,7 +1,7 @@
 language: java
 jdk:
   - openjdk7
-script: ant compile_sources
+script: ant
 
 env:
   global:

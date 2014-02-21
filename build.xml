@@ -67,6 +67,23 @@
       <param name="package.aid" value="0xA0:0x00:0x00:0x02:0x47:0x10"/>
       <param name="applet.aid" value="0xA0:0x00:0x00:0x02:0x47:0x10:0x01"/>
     </antcall>
+    <!-- Build the FakeEstEIDApplet  -->
+    <antcall target="create_applet">
+      <param name="applet.name" value="FakeEstEIDApplet"/>
+      <param name="applet.version" value="0.1"/>
+      <param name="package.aid" value="0xD2:0x33:0x00:0x00:0x00"/>
+      <param name="applet.aid" value="0xD2:0x33:0x00:0x00:0x00:0x45:0x73:0x74:0x45:0x49:0x44:0x20:0x76:0x33:0x35"/>
+    </antcall>
+  </target>
+  <!-- Build the FakeEstEIDApplet separately from others if asked. -->
+  <target name="e" depends="compile_sources">
+    <antcall target="create_applet">
+      <param name="applet.name" value="FakeEstEIDApplet"/>
+      <param name="applet.version" value="0.1"/>
+      <param name="javacard.version" value="2.2.1"/>
+      <param name="package.aid" value="0xD2:0x33:0x00:0x00:0x00"/>
+      <param name="applet.aid" value="0xD2:0x33:0x00:0x00:0x00:0x45:0x73:0x74:0x45:0x49:0x44:0x20:0x76:0x33:0x35"/>
+    </antcall>
   </target>
   <!-- No modification needed below this line -->
   <loadresource property="PACKAGE_PATH">

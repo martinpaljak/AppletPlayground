@@ -15,6 +15,7 @@ AppletPlayground is an easy method for getting to know JavaCard development. Eve
  * FluffyPGPApplet - [FluffyKaon/OpenPGP-Card@545da17f82ff4627758674bbcbb0e602e959d9dd](https://github.com/FluffyKaon/OpenPGP-Card/commit/545da17f82ff4627758674bbcbb0e602e959d9dd) (GPL3)
  * YkneoOath - [Yubico/ykneo-oath](https://github.com/Yubico/ykneo-oath/) (GPL3)
  * PassportApplet - http://sourceforge.net/p/jmrtd/code/HEAD/tree/trunk/passportapplet/ (LGPL3)
+ * FakeEstEIDApplet - https://github.com/martinpaljak/AppletPlayground/wiki/FakeEstEID (MIT)
 
 The following changes have been applied to source code of applets:
  * change of the package name to ```pro.javacard.applets```
@@ -53,7 +54,6 @@ The following changes have been applied to source code of applets:
    * Card simulation with [jCardSim](https://github.com/licel/jcardsim)* (Apache 2.0) <sub>currently only supports JavaCard 2.2.1 :(</sub>
  * More applets:
    * BTChipApplet - https://github.com/btchip/btchipJC (AGPL3) <sub>Depends on JavaCard 3 support</sub>
-   * [FakeEstEID](https://github.com/martinpaljak/AppletPlayground/wiki/FakeEstEID) - Estonian ID-card compatible applet (MIT)
    * EchoApplet, TraceApplet, RandomApplet, StorageApplet
    * If you want to see more applets in the build set, file an issue with link!
  * More flexible build (Grails?)

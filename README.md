@@ -1,7 +1,7 @@
 Applet Playground
 =================
 
-AppletPlayground is an easy method for getting to know JavaCard development. Everything you need to compile and run the open source applets for JavaCard 2.2.2 and load them to GlobalPlatform compatible smart cards for testing with JUnit or running in an emulated/simulated container. Also includes a [Hello World](http://en.wikipedia.org/wiki/Hello_world_program) applet to serve as a starting point for your own applet. [New features](#in-the-pipeline) coming soon!
+AppletPlayground is an easy method for getting to know JavaCard development. Everything you need to compile and run the open source applets for JavaCard 2.2.2 and load them to GlobalPlatform compatible smart cards for testing with JUnit or running in an [emulated container](https://github.com/martinpaljak/vJCRE#import-projavacardvre). Also includes a [Hello World](http://en.wikipedia.org/wiki/Hello_world_program) applet to serve as a starting point for your own applet. [New features](#in-the-pipeline) coming soon!
 
 ## Time to experiment!
 ![Experiments!](http://www.freevector.com/site_media/preview_images/FreeVector-Evil-Doctor.jpg)
@@ -51,7 +51,7 @@ The following changes have been applied to source code of applets:
  * Generic
    * JavaCard 3.0.1/3.0.4 as well as JavaCard 2.2.1 support
    * Automatic code hardening with http://sourceforge.net/projects/cesta/ (BSD)
-   * Card simulation with [vJCRE](https://github.com/martinpaljak/vJCRE#import-projavacardvre)* (MIT/GPL)
+   * Card simulation with [vJCRE](https://github.com/martinpaljak/vJCRE#import-projavacardvre) (MIT/GPL)
  * More applets:
    * BTChipApplet - https://github.com/btchip/btchipJC (AGPL3) <sub>Depends on JavaCard 3 support</sub>
    * EchoApplet, TraceApplet, RandomApplet, StorageApplet

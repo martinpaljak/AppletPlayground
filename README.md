@@ -51,7 +51,7 @@ The following changes have been applied to source code of applets:
  * Generic
    * JavaCard 3.0.1/3.0.4 as well as JavaCard 2.2.1 support
    * Automatic code hardening with http://sourceforge.net/projects/cesta/ (BSD)
-   * Card simulation with [jCardSim](https://github.com/licel/jcardsim)* (Apache 2.0) <sub>currently only supports JavaCard 2.2.1 :(</sub>
+   * Card simulation with [vJCRE](https://github.com/martinpaljak/vJCRE#import-projavacardvre)* (MIT/GPL)
  * More applets:
    * BTChipApplet - https://github.com/btchip/btchipJC (AGPL3) <sub>Depends on JavaCard 3 support</sub>
    * EchoApplet, TraceApplet, RandomApplet, StorageApplet

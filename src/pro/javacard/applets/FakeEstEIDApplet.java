@@ -206,6 +206,8 @@ public final class FakeEstEIDApplet extends Applet {
 
 	// Historical bytes
 	public static final byte[] histbytes = new byte[] {(byte) 0x45, (byte) 0x73, (byte) 0x74, (byte) 0x45, (byte) 0x49, (byte) 0x44, (byte) 0x20, (byte) 0x76, (byte) 0x65, (byte) 0x72, (byte) 0x20, (byte) 0x31, (byte) 0x2E, (byte) 0x30};
+	public static final byte[] aid = new byte[] {(byte)0xD2, (byte)0x33, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x45, (byte)0x73, (byte)0x74, (byte)0x45, (byte)0x49, (byte)0x44, (byte)0x20, (byte)0x76, (byte)0x33, (byte)0x35};
+
 
 	// This could be EEPROM for... fun and readability
 	// private short selected_file = FID_3F00;
@@ -488,8 +490,9 @@ public final class FakeEstEIDApplet extends Applet {
 					len = privkey.getDQ1(buffer, (short)0);
 				} else if (p2 == 0x05) {
 					len = privkey.getPQ(buffer, (short)0);
-				} else
+				} else {
 					ISOException.throwIt(ISO7816.SW_INCORRECT_P1P2);
+				}
 				apdu.setOutgoingAndSend((short)0, len);
 			} else { // set
 				len = apdu.setIncomingAndReceive();
@@ -503,8 +506,9 @@ public final class FakeEstEIDApplet extends Applet {
 					privkey.setDQ1(buffer, ISO7816.OFFSET_CDATA, len);
 				} else if (p2 == 0x05) {
 					privkey.setPQ(buffer, ISO7816.OFFSET_CDATA, len);
-				} else
+				} else {
 					ISOException.throwIt(ISO7816.SW_INCORRECT_P1P2);
+				}
 			}
 			break;
 		case 0x04: // personal data file
@@ -538,7 +542,7 @@ public final class FakeEstEIDApplet extends Applet {
 		}
 	}
 
-	private class PersonalDataFile {
+	private static class PersonalDataFile {
 		byte[] surname;
 		byte[] name1;
 		byte[] name2;

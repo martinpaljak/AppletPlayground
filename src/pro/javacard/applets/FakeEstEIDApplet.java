@@ -301,7 +301,7 @@ public final class FakeEstEIDApplet extends Applet {
 				}
 			} else if (p1 == 0x04) {
 				short aidlen = JCSystem.getAID().getBytes(ram, (short)0x00);
-				if (Util.arrayCompare(buffer, (short)0, ram, (short)0, aidlen) != 0x00) {
+				if (Util.arrayCompare(buffer, ISO7816.OFFSET_CDATA, ram, (short)0, aidlen) != 0x00) {
 					ISOException.throwIt(ISO7816.SW_FILE_NOT_FOUND);
 				}
 			}

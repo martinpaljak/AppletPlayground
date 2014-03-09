@@ -206,6 +206,7 @@ public final class FakeEstEIDApplet extends Applet {
 
 	// Historical bytes
 	public static final byte[] histbytes = new byte[] {(byte) 0x45, (byte) 0x73, (byte) 0x74, (byte) 0x45, (byte) 0x49, (byte) 0x44, (byte) 0x20, (byte) 0x76, (byte) 0x65, (byte) 0x72, (byte) 0x20, (byte) 0x31, (byte) 0x2E, (byte) 0x30};
+	// AID
 	public static final byte[] aid = new byte[] {(byte)0xD2, (byte)0x33, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x45, (byte)0x73, (byte)0x74, (byte)0x45, (byte)0x49, (byte)0x44, (byte)0x20, (byte)0x76, (byte)0x33, (byte)0x35};
 
 
@@ -227,13 +228,13 @@ public final class FakeEstEIDApplet extends Applet {
 		Util.arrayFillNonAtomic(signcert, (short) 0, (short) signcert.length, (byte) 0x00);
 
 		pd = new PersonalDataFile();
-		// Fill all records with 'A'
+		// Fill all records of pd with 'A'
 		for (byte i = 1; i <= 16; i++) {
 			byte[] src = pd.rec2field(i);
 			Util.arrayFillNonAtomic(src, (short) 0, (short) src.length, (byte) 'A');
 		}
 
-		runtime_fields = JCSystem.makeTransientShortArray((short) 10, JCSystem.CLEAR_ON_RESET);
+		runtime_fields = JCSystem.makeTransientShortArray((short) 1, JCSystem.CLEAR_ON_RESET);
 		rsa = Cipher.getInstance(Cipher.ALG_RSA_PKCS1, false);
 		ram = JCSystem.makeTransientByteArray((short) 384, JCSystem.CLEAR_ON_RESET);
 	}
@@ -568,7 +569,7 @@ public final class FakeEstEIDApplet extends Applet {
 			nationality = new byte[3];
 			dob = new byte[10];
 			idcode = new byte[11];
-			serial = new byte[8];
+			serial = new byte[9];
 			valid = new byte[10];
 			pob = new byte[35];
 			issued = new byte[10];

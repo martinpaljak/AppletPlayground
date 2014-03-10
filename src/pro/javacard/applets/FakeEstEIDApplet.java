@@ -433,10 +433,16 @@ public final class FakeEstEIDApplet extends Applet {
 				apdu.setOutgoingAndSend((short)0, len2);
 			} else if (op == (short)0x8086) { //decrypt
 				if (buffer[0] == 0x10) {
-					Util.setShort(ram, (short) 0, Util.arrayCopyNonAtomic(buffer, (short)(ISO7816.OFFSET_CDATA+ 1), ram, (short)2, (short)(len -1)));
+					// Skip initial 0
+					short len1 = Util.arrayCopyNonAtomic(buffer, (short)(ISO7816.OFFSET_CDATA+1), ram, (short)2, (short)(len - 1));
+					// Store offset to pos0
+					Util.setShort(ram, (short) 0, len1);
 				} else {
+					// Concatenate
 					len2 = Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_CDATA, ram, Util.makeShort(ram[0], ram[1]), len);
-					len = Util.arrayCopyNonAtomic(ram, (short)2, ram, (short)0, len2);
+					// Shift back by two
+					len = Util.arrayCopyNonAtomic(ram, (short)2, ram, (short)0, (short) (len2-2));
+					// Decrypt
 					rsa.init(auth, Cipher.MODE_DECRYPT);
 					len2 = rsa.doFinal(ram, (short) 0, len, buffer, (short) 0);
 					apdu.setOutgoingAndSend((short)0, len2);
@@ -476,9 +482,9 @@ public final class FakeEstEIDApplet extends Applet {
 		case 0x03: // key material
 			// Key material select
 			if (p1 == 0x01) {
-				privkey = (RSAPrivateCrtKey) auth;
+				privkey = auth;
 			} else if (p1 == 0x02) { // set
-				privkey = (RSAPrivateCrtKey) sign;
+				privkey = sign;
 			}
 			if (buffer[ISO7816.OFFSET_LC] == 0x00) { // get
 				if (p2 == 0x01) {

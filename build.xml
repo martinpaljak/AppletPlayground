@@ -80,7 +80,6 @@
     <antcall target="create_applet">
       <param name="applet.name" value="FakeEstEIDApplet"/>
       <param name="applet.version" value="0.1"/>
-      <param name="javacard.version" value="2.2.1"/>
       <param name="package.aid" value="0xD2:0x33:0x00:0x00:0x00"/>
       <param name="applet.aid" value="0xD2:0x33:0x00:0x00:0x00:0x45:0x73:0x74:0x45:0x49:0x44:0x20:0x76:0x33:0x35"/>
     </antcall>
@@ -115,6 +114,12 @@
         <pathelement location="${OPENPLATFORM_HOME}/visaop20.jar"/>
       </classpath>
     </javac>
+  </target>
+  <target name="javadist" depends="compile_sources">
+    <jar destfile="applet-playground.jar" basedir="tmp/classes"/>
+  </target>
+  <target name="capdist" depends="clean,toys">
+    <jar destfile="applet-playground-caps.jar" basedir="." includes="*.cap"/>
   </target>
   <!-- Transform compiled applet code into a minified and verified CAP file -->
   <target name="create_applet">

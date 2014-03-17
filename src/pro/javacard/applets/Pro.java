@@ -49,4 +49,15 @@ public final class Pro {
 		// Exit normal code flow
 		ISOException.throwIt(ISO7816.SW_NO_ERROR);
 	}
+
+	public static void send(short offset, short len) {
+		APDU apdu = APDU.getCurrentAPDU();
+		apdu.setOutgoingAndSend(offset, len);
+		// Exit normal code flow
+		ISOException.throwIt(ISO7816.SW_NO_ERROR);
+	}
+
+	public static void throwIt(short sw) {
+		ISOException.throwIt(sw);
+	}
 }

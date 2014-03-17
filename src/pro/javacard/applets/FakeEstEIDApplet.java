@@ -222,6 +222,7 @@ public final class FakeEstEIDApplet extends Applet {
 		sign = (RSAPrivateCrtKey) KeyBuilder.buildKey(KeyBuilder.TYPE_RSA_CRT_PRIVATE, KeyBuilder.LENGTH_RSA_2048, false);
 		auth.clearKey();
 		sign.clearKey();
+
 		authcert = new byte[0x600];
 		Util.arrayFillNonAtomic(authcert, (short) 0, (short) authcert.length, (byte) 0x00);
 		signcert = new byte[0x600];
@@ -282,7 +283,7 @@ public final class FakeEstEIDApplet extends Applet {
 			if (p1 == 0x00) {
 				runtime_fields[selectedfile] = FID_3F00;
 			} else if (buffer[ISO7816.OFFSET_LC] == 0x02) {
-				apdu.setIncomingAndReceive();
+				len = apdu.setIncomingAndReceive();
 				// must be 2 bytes of input.
 				short fid = Util.makeShort(buffer[5], buffer[6]);
 				switch (fid) {
@@ -297,13 +298,12 @@ public final class FakeEstEIDApplet extends Applet {
 					runtime_fields[selectedfile] = fid;
 					break;
 				default:
-					ISOException.throwIt(ISO7816.SW_FILE_NOT_FOUND);
+					Pro.throwIt(ISO7816.SW_FILE_NOT_FOUND);
 					break;
 				}
 			} else if (p1 == 0x04) {
-				short aidlen = JCSystem.getAID().getBytes(ram, (short)0x00);
-				if (Util.arrayCompare(buffer, ISO7816.OFFSET_CDATA, ram, (short)0, aidlen) != 0x00) {
-					ISOException.throwIt(ISO7816.SW_FILE_NOT_FOUND);
+				if (!JCSystem.getAID().partialEquals(buffer, ISO7816.OFFSET_CDATA, (byte) len)) {
+					Pro.throwIt(ISO7816.SW_FILE_NOT_FOUND);
 				}
 			}
 
@@ -335,7 +335,7 @@ public final class FakeEstEIDApplet extends Applet {
 					Pro.send_array(fci_0033);
 					break;
 				default:
-					ISOException.throwIt(ISO7816.SW_FILE_NOT_FOUND);
+					Pro.throwIt(ISO7816.SW_FILE_NOT_FOUND);
 				}
 			}
 			break;
@@ -347,43 +347,47 @@ public final class FakeEstEIDApplet extends Applet {
 			} else if (runtime_fields[selectedfile] == FID_DDCE) {
 				Pro.send_array(signcert, offset, len);
 			} else {
-				ISOException.throwIt(ISO7816.SW_FILE_INVALID);
+				Pro.throwIt(ISO7816.SW_FILE_INVALID);
 			}
 			break;
 		case ISO7816.INS_READ_RECORD:
 			byte recno = p1;
 			if (runtime_fields[selectedfile] == FID_5044) {
 				byte[] src = pd.rec2field(recno);
-				if (src == null)
-					ISOException.throwIt(ISO7816.SW_RECORD_NOT_FOUND);
+				if (src == null) {
+					Pro.throwIt(ISO7816.SW_RECORD_NOT_FOUND);
+				}
 				Pro.send_array(src);
 			} else if (runtime_fields[selectedfile] == FID_0016) {
-				if (recno == (byte) 1)
+				if (recno == (byte) 1) {
 					Pro.send_array(mf_0016_1);
-				else if (recno == (byte) 2)
+				} else if (recno == (byte) 2) {
 					Pro.send_array(mf_0016_2);
-				else if (recno == (byte) 3)
+				} else if (recno == (byte) 3) {
 					Pro.send_array(mf_0016_3);
-				else
-					ISOException.throwIt(ISO7816.SW_RECORD_NOT_FOUND);
+				} else {
+					Pro.throwIt(ISO7816.SW_RECORD_NOT_FOUND);
+				}
 			} else if (runtime_fields[selectedfile] == FID_0013) {
-				if (recno == (byte) 1)
+				if (recno == (byte) 1) {
 					Pro.send_array(eeee_0013_1);
-				else if (recno == (byte) 2)
+				} else if (recno == (byte) 2) {
 					Pro.send_array(eeee_0013_2);
-				else if (recno == (byte) 3)
+				} else if (recno == (byte) 3) {
 					Pro.send_array(eeee_0013_3);
-				else if (recno == (byte) 4)
+				} else if (recno == (byte) 4) {
 					Pro.send_array(eeee_0013_4);
-				else
-					ISOException.throwIt(ISO7816.SW_RECORD_NOT_FOUND);
+				} else {
+					Pro.throwIt(ISO7816.SW_RECORD_NOT_FOUND);
+				}
 			} else if (runtime_fields[selectedfile] == FID_0033) {
-				if (recno == (byte) 1)
+				if (recno == (byte) 1) {
 					Pro.send_array(eeee_0033_1);
-				else
-					ISOException.throwIt(ISO7816.SW_RECORD_NOT_FOUND);
+				} else {
+					Pro.throwIt(ISO7816.SW_RECORD_NOT_FOUND);
+				}
 			} else
-				ISOException.throwIt(ISO7816.SW_FILE_INVALID);
+				Pro.throwIt(ISO7816.SW_FILE_INVALID);
 			break;
 			// Above is enough to show a "valid card" in qesteidutil/pkcs15-tool
 		case ISO7816.INS_VERIFY:
@@ -398,29 +402,36 @@ public final class FakeEstEIDApplet extends Applet {
 				src = pin2;
 			}
 			len = apdu.setIncomingAndReceive();
-			Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_LC, src, (short) 0, (short) (len + 1));
-			ISOException.throwIt(ISO7816.SW_NO_ERROR);
+			if (src[0] > 0) {
+				if (src[0] != len) {
+					Pro.throwIt((short) 0x63C2);
+				}
+			} else {
+				// FIXME: this approach requires transactions
+				Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_LC, src, (short) 1, (short) len);
+				src[0] = (byte) len;
+			}
+			Pro.throwIt(ISO7816.SW_NO_ERROR);
 			break;
 		case ISO7816.INS_CHANGE_REFERENCE_DATA:
 			// We don't use PIN codes, so anything goes
-			ISOException.throwIt(ISO7816.SW_NO_ERROR);
+			Pro.throwIt(ISO7816.SW_NO_ERROR);
 			break;
 		case ISO7816.INS_RESET_RETRY_COUNTER:
 			// We don't use PIN codes, so anything goes
-			ISOException.throwIt(ISO7816.SW_NO_ERROR);
+			Pro.throwIt(ISO7816.SW_NO_ERROR);
 			break;
 			// The following commands do actual crypto
 		case ISO7816.INS_MANAGE_SECURITY_ENVIRONMENT:
 			// Internal state is implicitly known
-			ISOException.throwIt(ISO7816.SW_NO_ERROR);
+			Pro.throwIt(ISO7816.SW_NO_ERROR);
 			break;
 		case ISO7816.INS_INTERNAL_AUTHENTICATE:
 			// We sign the incoming data with authentication key
 			len = apdu.setIncomingAndReceive();
 			rsa.init(auth, Cipher.MODE_ENCRYPT);
 			len2 = rsa.doFinal(buffer, ISO7816.OFFSET_CDATA, len, ram, (short) 0);
-			Util.arrayCopyNonAtomic(ram, (short) 0, buffer, (short) 0, len2);
-			apdu.setOutgoingAndSend((short)0, len2);
+			Pro.send_array(ram, (short)0, len2);
 			break;
 		case ISO7816.INS_PERFORM_SECURITY_OPERATION:
 			len = apdu.setIncomingAndReceive();
@@ -429,8 +440,7 @@ public final class FakeEstEIDApplet extends Applet {
 			if (op == (short)0x9E9A) { // sign
 				rsa.init(sign, Cipher.MODE_ENCRYPT);
 				len2 = rsa.doFinal(buffer, ISO7816.OFFSET_CDATA, len, ram, (short) 0);
-				Util.arrayCopyNonAtomic(ram, (short) 0, buffer, (short) 0, len2);
-				apdu.setOutgoingAndSend((short)0, len2);
+				Pro.send_array(ram, (short)0, len2);
 			} else if (op == (short)0x8086) { //decrypt
 				if (buffer[0] == 0x10) {
 					// Skip initial 0
@@ -442,16 +452,16 @@ public final class FakeEstEIDApplet extends Applet {
 					len2 = Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_CDATA, ram, Util.makeShort(ram[0], ram[1]), len);
 					// Shift back by two
 					len = Util.arrayCopyNonAtomic(ram, (short)2, ram, (short)0, (short) (len2-2));
-					// Decrypt
+					// Decrypt directly into APDU buffer
 					rsa.init(auth, Cipher.MODE_DECRYPT);
 					len2 = rsa.doFinal(ram, (short) 0, len, buffer, (short) 0);
-					apdu.setOutgoingAndSend((short)0, len2);
+					Pro.send((short)0, len2);
 				}
 			} else
-				ISOException.throwIt(ISO7816.SW_INCORRECT_P1P2);
+				Pro.throwIt(ISO7816.SW_INCORRECT_P1P2);
 			break;
 		default:
-			ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
+			Pro.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
 		}
 	}
 
@@ -524,6 +534,7 @@ public final class FakeEstEIDApplet extends Applet {
 				Pro.send_array(src);
 			} else  { // set
 				len = apdu.setIncomingAndReceive();
+				// FIXME: padding with space is a vilation in new apps
 				Util.arrayFillNonAtomic(src, (short)0, (short)src.length, (byte) ' ');
 				Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_CDATA, src, (short) 0, len);
 			}
@@ -538,10 +549,11 @@ public final class FakeEstEIDApplet extends Applet {
 			} else
 				ISOException.throwIt(ISO7816.SW_INCORRECT_P1P2);
 			if (buffer[ISO7816.OFFSET_LC] == 0x00) { // get
-				Pro.send_array(src, (short) 1, src[0]);
+				Pro.send_array(src, (short) 0, (short) (src[0]+1));
 			} else { //set
 				len = apdu.setIncomingAndReceive();
-				Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_LC, src, (short) 0, (short) (len + 1));
+				Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_LC, src, (short) 0, (short) len);
+				src[0] = (byte) len;
 			}
 			break;
 		default:

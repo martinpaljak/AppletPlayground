@@ -159,6 +159,7 @@ public class OpenPGPApplet extends Applet implements ExtendedLength {
 	public OpenPGPApplet() {
 		// Create temporary arrays
 		tmp = JCSystem.makeTransientByteArray(BUFFER_MAX_LENGTH, JCSystem.CLEAR_ON_DESELECT);
+		buffer = JCSystem.makeTransientByteArray(BUFFER_MAX_LENGTH,JCSystem.CLEAR_ON_DESELECT);
 		pw1_modes = JCSystem.makeTransientBooleanArray((short) 2, JCSystem.CLEAR_ON_DESELECT);
 
 		// Initialize PW1 with default password

@@ -610,7 +610,7 @@ public class EidCard extends javacard.framework.Applet {
 			pinLengthInBytes++;
 		// check if PIN data is padded with 0xFF
 		byte i = (byte) (offset + PIN_SIZE - 1);
-		for (; i > offset + pinLengthInBytes; i--) {
+		for (; i > (byte)(offset + pinLengthInBytes); i--) {
 			if (buffer[i] != (byte) 0xFF)
 				return false;
 		}
@@ -633,11 +633,11 @@ public class EidCard extends javacard.framework.Applet {
 		byte pinLengthInBytes = (byte) (pinLength >> 1);
 		byte i;
 		for (i = 0; i < pinLengthInBytes; i++) {
-			if (buffer[OFFSET_PIN_DATA + i] != (randomBuffer[i] & 0x77))
+			if (buffer[(short)(OFFSET_PIN_DATA + i)] != (randomBuffer[i] & 0x77))
 				return false;
 		}
 		if (oldLength == (byte) 0x01) {
-			if ((buffer[OFFSET_PIN_DATA + pinLengthInBytes] >> 4) != ((randomBuffer[i] & 0x7F) >> 4))
+			if ((buffer[(short)(OFFSET_PIN_DATA + pinLengthInBytes)] >> 4) != ((randomBuffer[i] & 0x7F) >> 4))
 				return false;
 		}
 		return true;

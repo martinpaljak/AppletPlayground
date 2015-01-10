@@ -429,8 +429,8 @@ public final class Gpg extends Applet {
     byte currentLength = pinLength[pinOffset];
     short length = (short) (buffer[ISO7816.OFFSET_LC] & 0x00FF);
     if (apdu.setIncomingAndReceive() != length ||
-        length > currentLength + MAX_PIN_LENGTH ||
-        length < currentLength + minLength) {
+        length > (short)(currentLength + MAX_PIN_LENGTH) ||
+        length < (short)(currentLength + minLength)) {
       ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
     }
     if (pins[pinOffset].getTriesRemaining() == 0) {
@@ -463,8 +463,8 @@ public final class Gpg extends Applet {
       if (pins[PIN_INDEX_RC].getTriesRemaining() == 0 || rcLength == 0) {
         ISOException.throwIt(SW_PIN_BLOCKED);
       }
-      if (length < rcLength + MIN_PIN1_LENGTH ||
-          length > rcLength + MAX_PIN_LENGTH) {
+      if (length < (short)(rcLength + MIN_PIN1_LENGTH) ||
+          length > (short)(rcLength + MAX_PIN_LENGTH)) {
         ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
       }
       if (pins[PIN_INDEX_RC].check(buffer, ISO7816.OFFSET_CDATA, rcLength)) {

@@ -10,7 +10,7 @@
   <taskdef name="javacard" classname="pro.javacard.ant.JavaCard" classpath="ext/ant-javacard.jar"/>
   <!-- All included applets -->
   <target name="toys">
-    <javacard jckit="${JC303}">
+    <javacard jckit="${JC222}">
       <!-- MuscleApplet -->
       <cap output="MuscleApplet.cap" sources="src/com/musclecard">
         <applet class="com.musclecard.CardEdge.CardEdge" aid="A00000000102"/>

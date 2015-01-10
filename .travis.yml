@@ -1,6 +1,8 @@
 language: java
 jdk:
   - openjdk7
+  - oraclejdk8
+  - oraclejdk7
 script: ant
 
 env:
@@ -16,6 +18,5 @@ addons:
       description: "Applet PLayground"
     notification_email: martin@martinpaljak.net
     build_command_prepend:
-    build_command: ant compile_sources
+    build_command: ant
     branch_pattern: coverity
-

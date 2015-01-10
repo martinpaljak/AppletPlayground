@@ -2,6 +2,7 @@
 <project basedir="." default="toys" name="AppletPlayground build">
   <!-- Applet building dependencies -->
   <property name="JC222" value="ext/java_card_kit-2_2_2"/>
+  <property name="JC303" value="ext/java_card_kit-3_0_3"/>
   <property name="OP20" value="ext/visa_openplatform-2_0"/>
   <property name="GP211" value="ext/globalplatform-2_1_1"/>
   
@@ -9,7 +10,7 @@
   <taskdef name="javacard" classname="pro.javacard.ant.JavaCard" classpath="ext/ant-javacard.jar"/>
   <!-- All included applets -->
   <target name="toys">
-    <javacard jckit="${JC222}">
+    <javacard jckit="${JC303}">
       <!-- MuscleApplet -->
       <cap output="MuscleApplet.cap" sources="src/com/musclecard">
         <applet class="com.musclecard.CardEdge.CardEdge" aid="A00000000102"/>
@@ -49,7 +50,7 @@
         <applet class="de.spline.uves.ndef.Ndef" aid="d27600008501"/>
       </cap>
       <!-- BTChip Applet -->
-      <cap jckit="../jc303_kit" output="BTChip.cap" sources="src/com/btchip" aid="FF425443484950">
+      <cap jckit="${JC303}" output="BTChip.cap" sources="src/com/btchip" aid="FF425443484950">
         <applet class="com.btchip.applet.poc.BTChipPocApplet" aid="FF42544348495001"/>
         <applet class="com.btchip.applet.poc.BTChipNFCForumApplet" aid="FF42544348495002"/>
       </cap>
@@ -61,6 +62,10 @@
       <cap output="BeID.cap" sources="src/be/fedict" aid="A000000177504B43532D31">
         <applet class="be.fedict.eidapplet.EidCard" aid="A000000177504B43532D3135"/>
         <import exps="${GP211}" jar="${GP211}/gp211.jar"/>
+      </cap>
+      <!-- ISOApplet -->
+      <cap jckit="${JC303}" output="ISOApplet.cap" sources="src/net/pwendland" aid="f276a288bcfba69d34f310">
+        <applet class="net.pwendland.javacard.pki.isoapplet.IsoApplet" aid="f276a288bcfba69d34f31001"/>
       </cap>
     </javacard>
   </target>

@@ -67,6 +67,10 @@
       <cap jckit="${JC303}" output="ISOApplet.cap" sources="src/net/pwendland" aid="f276a288bcfba69d34f310">
         <applet class="net.pwendland.javacard.pki.isoapplet.IsoApplet" aid="f276a288bcfba69d34f31001"/>
       </cap>
+      <!-- ISO18013 Driving License -->
+      <cap output="DriversLicense.cap" sources="src/org/isodl" aid="a00000024802">
+        <applet class="org.isodl.applet.LicenseApplet" aid="a0000002480200"/>
+      </cap>
     </javacard>
   </target>
 </project>

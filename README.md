@@ -22,6 +22,7 @@ It includes various open source applets from the internet, bundled into ready to
  * BeID* - [r62](https://code.google.com/p/eid-quick-key-toolset) (LGPL)
  * OpenEMV - [r3](svn://svn.code.sf.net/p/openemv/code/trunk) from svn://svn.code.sf.net/p/openemv/code/trunk (LGPL2)
  * ISOApplet - [philipWendland/IsoApplet](https://github.com/philipWendland/IsoApplet) (GPL3)
+ * DriversLicense [r175](svn://svn.code.sf.net/p/isodl/code/) from svn://svn.code.sf.net/p/isodl/code/ (LGPL2)
  * PLAID - (public license?, no source linke)
 
 Note: applets marked with * have obvious blocking errors (missing casts from int to short) removed from source.

@@ -167,7 +167,7 @@ public class FileSystem {
             short cvcaRootIndex = -1;
             short cvcaAltIndex = -1;
             for(short i = 0; i<length ; i++) {
-                if(data[i] == 0x04 && data[i+1] == 0x11) {
+                if(data[i] == 0x04 && data[(short)(i+1)] == 0x11) {
                     if(cvcaRootIndex == -1) {
                         cvcaRootIndex = (short)((short)(file_offset + i) + 2);                        
                     }else{

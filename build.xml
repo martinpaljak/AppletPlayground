@@ -71,6 +71,9 @@
       <cap output="DriversLicense.cap" sources="src/org/isodl" aid="a00000024802">
         <applet class="org.isodl.applet.LicenseApplet" aid="a0000002480200"/>
       </cap>
+      <cap output="AlgTest.cap" sources="src/AlgTest" aid="6D797061636B616731">
+        <applet class="AlgTest.AlgTest" aid="6D7970616330303031"/>
+      </cap>
     </javacard>
   </target>
 </project>

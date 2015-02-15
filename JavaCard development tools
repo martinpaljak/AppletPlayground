@@ -1,0 +1,26 @@
+The following tools are specifically for JavaCOS.
+1. JCOP 
+   Java Card OpenPlatform (JCOP) is a smart card operating system for the Java Card platform.(NXP)
+
+2. JCIDE
+   JCIDE is an Integrated Development Environment designed specifically for the JavaCard programming language.
+     a. Code Intelligence 
+     b. Poweful Editor
+     c. Graphical Debugger
+   For more information: http://www.javacos.com
+   
+3. SCT
+   SCT is a scripting tool for smart cards that can be unlimited extension. 
+
+4. PyApduTool
+   PyApduTool is a handy tool which can communicate with the card via the reader connected to PC. It is a PC/SC compliant application.
+
+5. ...
+
+Note:
+   Because my ability is limited,if you know more tools for JavaCard development,thanks for sharing them here.
+   I hope you will adding more.Thanks in advance.
+
+
+
+

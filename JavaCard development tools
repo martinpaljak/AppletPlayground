@@ -1,6 +1,7 @@
 The following tools are specifically for JavaCOS.
 1. JCOP 
-   Java Card OpenPlatform (JCOP) is a smart card operating system for the Java Card platform.(NXP)
+   Java Card OpenPlatform (JCOP) is a smart card operating system for the Java Card platform.This development tools is a plugin 
+   to Eclipse (software) IDE. NXP has maintained JCOP Tools and extended it with a CryptoPlugin and new JCOP simulations.
 
 2. JCIDE
    JCIDE is an Integrated Development Environment designed specifically for the JavaCard programming language.

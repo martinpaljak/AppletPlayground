@@ -23,7 +23,7 @@ It includes various open source applets from the internet, bundled into ready to
  * OpenEMV - [r3](svn://svn.code.sf.net/p/openemv/code/trunk) from svn://svn.code.sf.net/p/openemv/code/trunk (LGPL2)
  * ISOApplet - [philipWendland/IsoApplet](https://github.com/philipWendland/IsoApplet) (GPL3)
  * DriversLicense* [r175](svn://svn.code.sf.net/p/isodl/code/) from svn://svn.code.sf.net/p/isodl/code/ (LGPL2)
- * PLAID - (public license?, no source linke)
+ * PLAID - [DHS Reference Implementation](http://www.humanservices.gov.au/corporate/publications-and-resources/plaid/reference-implementation-dhs) ([License](http://www.humanservices.gov.au/corporate/publications-and-resources/plaid/licence-terms))
 
 Note: applets marked with * have obvious blocking errors (missing casts from int to short for 2.2.X target) removed from source.
 

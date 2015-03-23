@@ -10,17 +10,14 @@ The following tools are specifically for JavaCard development.
      b. Poweful Editor
      c. Graphical Debugger
    For more information: http://javacos.com/sdkinfo.php
-   
-3. SCT
-   SCT is a scripting tool that can be unlimited extension for smart cards . 
 
-4. PyApduTool
+3. PyApduTool
    PyApduTool is a handy tool which can communicate with the card via the reader connected to PC. It is a PC/SC compliant application.
    You can connect card,load CAP file and send APDU commands to the card by PyApduTool.
    It is also developed by JAVACOS Technologies(http://www.javacos.com).
    
 
-5. ...
+4. ...
 
 Note:
    Because my ability is limited,if you know more tools for JavaCard development,thanks for sharing them here.

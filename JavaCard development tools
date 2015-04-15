@@ -9,7 +9,7 @@ The following tools are specifically for JavaCard development.
      a. Code Intelligence 
      b. Poweful Editor
      c. Graphical Debugger
-   For more information: http://javacos.com/sdkinfo.php
+   For more information: http://www.javacos.com/developmentkit.php
 
 3. PyApduTool
    PyApduTool is a handy tool which can communicate with the card via the reader connected to PC. It is a PC/SC compliant application.

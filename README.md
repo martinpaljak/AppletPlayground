@@ -5,6 +5,8 @@ AppletPlayground is an easy method for getting to know JavaCard development by l
 
 It includes various open source applets from the internet, bundled into ready to use package. Everything you need to edit, compile and load the applets to real JavaCard-s or test with an emulator.
 
+[![Build Status](https://travis-ci.org/martinpaljak/AppletPlayground.svg?branch=master)](https://travis-ci.org/martinpaljak/AppletPlayground)
+
 ## Time to experiment!
 ![Experiments!](http://www.freevector.com/site_media/preview_images/FreeVector-Evil-Doctor.jpg)
 <sub>Mad Genius Vector by Vectorya.com (CC 3.0 Attribution Non-Commercial)</sub>

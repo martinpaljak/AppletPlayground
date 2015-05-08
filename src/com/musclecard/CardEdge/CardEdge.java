@@ -437,10 +437,10 @@ public class CardEdge extends javacard.framework.Applet implements ExtendedLengt
 
 		OwnerPIN pin = pins[0];
 
-		if (pin != null) {
-		        if (!CheckPINPolicy(buffer, base, numBytes))
-		        	ISOException.throwIt(SW_INVALID_PARAMETER);
+		if (!CheckPINPolicy(buffer, base, numBytes))
+		        ISOException.throwIt(SW_INVALID_PARAMETER);
 
+		if (pin != null) {
 		        if (pin.getTriesRemaining() == (byte) 0x00)
 			        ISOException.throwIt(SW_IDENTITY_BLOCKED);
 

@@ -284,6 +284,8 @@ public class CardEdge extends javacard.framework.Applet implements ExtendedLengt
 	 ****************************************/
 
 	private CardEdge(byte[] bArray, short bOffset, byte bLength) {
+	        ublk_pins = new OwnerPIN[MAX_NUM_PINS];
+	        pins = new OwnerPIN[MAX_NUM_PINS];
 		// FIXME: something should be done already here, not only with setup APDU
 	}
 
@@ -435,14 +437,16 @@ public class CardEdge extends javacard.framework.Applet implements ExtendedLengt
 
 		OwnerPIN pin = pins[0];
 
-		if (!CheckPINPolicy(buffer, base, numBytes))
-			ISOException.throwIt(SW_INVALID_PARAMETER);
+		if (pin != null) {
+		        if (!CheckPINPolicy(buffer, base, numBytes))
+		        	ISOException.throwIt(SW_INVALID_PARAMETER);
 
-		if (pin.getTriesRemaining() == (byte) 0x00)
-			ISOException.throwIt(SW_IDENTITY_BLOCKED);
+		        if (pin.getTriesRemaining() == (byte) 0x00)
+			        ISOException.throwIt(SW_IDENTITY_BLOCKED);
 
-		if (!pin.check(buffer, base, numBytes))
-			ISOException.throwIt(SW_AUTH_FAILED);
+		        if (!pin.check(buffer, base, numBytes))
+			        ISOException.throwIt(SW_AUTH_FAILED);
+		}
 
 		base += numBytes;
 

@@ -41,7 +41,7 @@ The above applets and the overall package come "AS-IS". I make no claims about t
  * A JavaCard card* (v2.2.2 or better)
    * [a list of webshops and compatible JavaCards](https://github.com/martinpaljak/GlobalPlatform/wiki/TestedCards)
  * Eclipse - get from [eclipse.org](http://eclipse.org/downloads/)
- * JCIDE - get from [javacardos.com](http://www.javacardos.com/JCIDE/downloads/JCKit.zip)
+ * JCIDE - get from [javacardos.com](http://www.javacardos.com/javacardforum/viewtopic.php?f=26&t=43)
 
 \* you can work with source code without a card and reader, but for actual testing having one is preferable.
 

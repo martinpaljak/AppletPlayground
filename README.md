@@ -28,7 +28,7 @@ One Account,All JavaCard.
  * OpenEMV - [r3](svn://svn.code.sf.net/p/openemv/code/trunk) from svn://svn.code.sf.net/p/openemv/code/trunk (LGPL2)
  * ISOApplet - [philipWendland/IsoApplet](https://github.com/philipWendland/IsoApplet) (GPL3)
  * DriversLicense* [r175](svn://svn.code.sf.net/p/isodl/code/) from svn://svn.code.sf.net/p/isodl/code/ (LGPL2)
- * PLAID - (public license?, no source linke)
+ * PLAID -[download link] (http://javacardos.com/javacardforum/viewtopic.php?f=17&t=34)
 
 Note: applets marked with * have obvious blocking errors (missing casts from int to short for 2.2.X target) removed from source.
 

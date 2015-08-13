@@ -5,6 +5,10 @@ AppletPlayground is an easy method for getting to know JavaCard development by l
 
 It includes various open source applets from the internet, bundled into ready to use package. Everything you need to edit, compile and load the applets to real JavaCard-s or test with an emulator.
 
+##JavaCard Professional Community
+[JavaCard Forum](http://javacardos.com/javacardforum/)
+One Account,All JavaCard.
+
 ## Time to experiment!
 ![Experiments!](http://www.freevector.com/site_media/preview_images/FreeVector-Evil-Doctor.jpg)
 <sub>Mad Genius Vector by Vectorya.com (CC 3.0 Attribution Non-Commercial)</sub>
@@ -36,7 +40,7 @@ The above applets and the overall package come "AS-IS". I make no claims about t
  * A JavaCard card* (v2.2.2 or better)
    * [a list of webshops and compatible JavaCards](https://github.com/martinpaljak/GlobalPlatform/wiki/TestedCards)
  * Eclipse - get from [eclipse.org](http://eclipse.org/downloads/)
- * JCIDE - get from [javacos.com](http://javacos.com/sdkinfo.php)
+ * JCIDE - get from [javacardos.com](http://www.javacardos.com/JCIDE/downloads/JCKit.zip)
 
 \* you can work with source code without a card and reader, but for actual testing having one is preferable.
 

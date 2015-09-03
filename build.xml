@@ -21,11 +21,11 @@
         <import exps="${OP20}" jar="${OP20}/visaop20.jar"/>
       </cap>
       <!-- OpenPGPApplet -->
-      <cap output="OpenPGPApplet" sources="src/openpgpcard" aid="D27600012401">
+      <cap output="OpenPGPApplet.cap" sources="src/openpgpcard" aid="D27600012401">
         <applet class="openpgpcard.OpenPGPApplet" aid="D2760001240102000000000000010000"/>
       </cap>
       <!-- Another PGP applet -->
-      <cap output="FluffyPGPApplet" sources="src/net/ss3t" aid="D27600012401">
+      <cap output="FluffyPGPApplet.cap" sources="src/net/ss3t" aid="D27600012401">
         <applet class="net.ss3t.javacard.gpg.Gpg" aid="D2760001240102000000000000000000"/>
       </cap>
       <!-- PKIApplet -->

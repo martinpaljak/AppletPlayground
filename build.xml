@@ -74,6 +74,9 @@
       <cap output="AlgTest.cap" sources="src/AlgTest" aid="6D797061636B616731">
         <applet class="AlgTest.AlgTest" aid="6D7970616330303031"/>
       </cap>
+      <cap output="readertest.cap" sources="src/org/debian" aid="A0:00:00:00:18:FF">
+        <applet class="org.debian.alioth.pcsclite.readertest.readertest" aid="A0:00:00:00:18:FF:01"/>
+      </cap>
     </javacard>
   </target>
 </project>

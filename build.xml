@@ -77,6 +77,10 @@
       <cap output="readertest.cap" sources="src/org/debian" aid="A0:00:00:00:18:FF">
         <applet class="org.debian.alioth.pcsclite.readertest.readertest" aid="A0:00:00:00:18:FF:01"/>
       </cap>
+      <!-- javacard-ndef -->
+      <cap output="javacard-ndef.cap" sources="src/org/aispring" version="1.0">
+        <applet class="org.aispring.javacard.ndef.NdefApplet" aid="D2760000850101"/>
+      </cap>
     </javacard>
   </target>
 </project>

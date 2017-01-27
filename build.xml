@@ -81,6 +81,10 @@
       <cap output="javacard-ndef.cap" sources="src/org/aispring" version="1.0">
         <applet class="org.aispring.javacard.ndef.NdefApplet" aid="D2760000850101"/>
       </cap>
+      <!-- GidsApplet -->
+      <cap output="GidsApplet.cap" sources="src/com/mysmartlogon/gidsApplet" aid="A00000039742544659" version="1.0">
+        <applet class="com.mysmartlogon.gidsApplet.GidsApplet" aid="A000000397425446590201"/>
+      </cap>
     </javacard>
   </target>
 </project>

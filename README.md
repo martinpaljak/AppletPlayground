@@ -29,6 +29,7 @@ It includes various open source applets from the internet, bundled into ready to
  * AlgTest
  * readertest - [r3223](https://anonscm.debian.org/viewvc/pcsclite/trunk/HandlerTest/JavaCard/src/org/debian/alioth/pcsclite/readertest/readertest.java?view=markup&pathrev=3223)
  * javacard-ndef - [promovicz/javacard-ndef@e3b271d](https://github.com/promovicz/javacard-ndef) (GPL)
+ * GidsApplet [vletoux/GidsApplet@f467573](https://github.com/vletoux/GidsApplet) (GPL3)
 
 Note: applets marked with * have obvious blocking errors (missing casts from int to short for 2.2.X target) removed from source.
 

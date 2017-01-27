@@ -1,7 +1,7 @@
 /**
  * Java Card implementation of the OpenPGP card
  * Copyright (C) 2012-2014  Yubico AB
- * Copyright (C) 2011  Joeri de Ruiter
+ * Copyright (C) 2011  Joeri de Ruiter <joeri@cs.ru.nl>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,27 +33,27 @@ import javacardx.crypto.*;
  * 0000 - Manufacturer
  * 00000001 - Serial number
  * 0000 - RFU
- * 
- * @author Joeri de Ruiter (joeri@cs.ru.nl)
- * @version $Revision: 12 $ by $Author: joeridr $
- *          $LastChangedDate: 2012-02-23 15:31:33 +0100 (tor, 23 feb 2012) $
  */
 public class OpenPGPApplet extends Applet implements ISO7816 {
 	private static final short _0 = 0;
-	
+
 	private static final boolean FORCE_SM_GET_CHALLENGE = true;
 
 	private static final byte[] HISTORICAL = { 0x00, 0x73, 0x00, 0x00,
 			(byte) 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 			0x00 };
-	
+
 	// returned by vendor specific command f1
-	private static final byte[] VERSION = { 0x01, 0x00, 0x09 };
+	private static final byte[] VERSION = { 0x01, 0x00, 0x12 };
+
+	// Openpgp defines 6983 as AUTHENTICATION BLOCKED
+	private static final short SW_AUTHENTICATION_BLOCKED = 0x6983;
 
 	private static final byte[] EXTENDED_CAP = { 
-			(byte) 0xF0, // Support for GET CHALLENGE
+			(byte) 0xF8, // Support for GET CHALLENGE
 						 // Support for Key Import
 						 // PW1 Status byte changeable
+						 // Support for private use data objects
 			0x00, // Secure messaging using 3DES
 			0x00, (byte) 0xFF, // Maximum length of challenges
 			0x04, (byte) 0xC0, // Maximum length Cardholder Certificate
@@ -72,6 +72,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 	private static short NAME_MAX_LENGTH = 39;
 	private static short LANG_MAX_LENGTH = 8;
 	private static short CERT_MAX_LENGTH = 1216;
+	private static short PRIVATE_DO_MAX_LENGTH = 254;
 	
 	private static short FP_LENGTH = 20;
 
@@ -91,6 +92,8 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 	private static final byte[] PW3_DEFAULT = { 0x31, 0x32, 0x33, 0x34, 0x35,
 			0x36, 0x37, 0x38 };
 
+	private static final short SW_REFERENCED_DATA_NOT_FOUND = 0x6A88;
+
 	private byte[] loginData;
 	private short loginData_length;
 
@@ -107,6 +110,18 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 	private short cert_length;
 
 	private byte sex;
+
+	private byte[] private_use_do_1;
+	private short private_use_do_1_length;
+
+	private byte[] private_use_do_2;
+	private short private_use_do_2_length;
+
+	private byte[] private_use_do_3;
+	private short private_use_do_3_length;
+
+	private byte[] private_use_do_4;
+	private short private_use_do_4_length;
 
 	private OwnerPIN pw1;
 	private byte pw1_length;
@@ -131,8 +146,6 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 
 	private Cipher cipher;
 	private RandomData random;
-
-	private byte[] tmp;
 
 	private byte[] buffer;
 	private short out_left = 0;
@@ -189,6 +202,15 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		cert_length = 0;
 		sex = 0x39;
 		
+		private_use_do_1 = new byte[PRIVATE_DO_MAX_LENGTH];
+		private_use_do_1_length = 0;
+		private_use_do_2 = new byte[PRIVATE_DO_MAX_LENGTH];
+		private_use_do_2_length = 0;
+		private_use_do_3 = new byte[PRIVATE_DO_MAX_LENGTH];
+		private_use_do_3_length = 0;
+		private_use_do_4 = new byte[PRIVATE_DO_MAX_LENGTH];
+		private_use_do_4_length = 0;
+
 		ds_counter = new byte[3];
 		
 		ca1_fp = new byte[FP_LENGTH];
@@ -197,9 +219,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 	}
 
 	public OpenPGPApplet() {
-		// Create temporary arrays
-		tmp = JCSystem.makeTransientByteArray(BUFFER_MAX_LENGTH,
-				JCSystem.CLEAR_ON_DESELECT);
+		// Create temporary array
 		buffer = JCSystem.makeTransientByteArray(BUFFER_MAX_LENGTH,
 				JCSystem.CLEAR_ON_DESELECT);
 		pw1_modes = JCSystem.makeTransientBooleanArray((short) 2,
@@ -235,11 +255,12 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		sm_success = false;
 		if ((byte) (cla & (byte) 0x0C) == (byte) 0x0C) {
 			// Force initialization of SSC before using SM to prevent replays
-			if(FORCE_SM_GET_CHALLENGE && !sm.isSetSSC() && (ins != (byte) 0x84)) ISOException.throwIt(SW_CONDITIONS_NOT_SATISFIED);
-				
+			if (FORCE_SM_GET_CHALLENGE && !sm.isSetSSC() && (ins != (byte) 0x84))
+				ISOException.throwIt(SW_CONDITIONS_NOT_SATISFIED);
+
 			lc = sm.unwrapCommandAPDU();
 			sm_success = true;
-        }
+		}
 		
 		short status = SW_NO_ERROR;
 		short le = 0;
@@ -253,28 +274,28 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 				out_sent = 0;
 				out_left = 0;
 			}
-			
-			if(terminated == true && ins != 0x44) {
+
+			if (terminated == true && ins != 0x44) {
 				ISOException.throwIt(ISO7816.SW_CONDITIONS_NOT_SATISFIED);
 			}
-	
+
 			// Other instructions
 			switch (ins) {
 			// GET RESPONSE
 			case (byte) 0xC0:
 				// Will be handled in finally clause
 				break;
-			
+
 			// VERIFY
 			case (byte) 0x20:
 				verify(apdu, p2);
 				break;
-	
+
 			// CHANGE REFERENCE DATA
 			case (byte) 0x24:
 				changeReferenceData(apdu, p2);
 				break;
-	
+
 			// RESET RETRY COUNTER
 			case (byte) 0x2C:
 				// Reset only available for PW1
@@ -283,7 +304,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 	
 				resetRetryCounter(apdu, p1);
 				break;
-	
+
 			// PERFORM SECURITY OPERATION
 			case (byte) 0x2A:
 				// COMPUTE DIGITAL SIGNATURE
@@ -296,34 +317,34 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 				} else {
 					ISOException.throwIt(SW_WRONG_P1P2);
 				}
-	
+
 				break;
 	
 			// INTERNAL AUTHENTICATE
 			case (byte) 0x88:
 				le = internalAuthenticate(apdu);
 				break;
-	
+
 			// GENERATE ASYMMETRIC KEY PAIR
 			case (byte) 0x47:
 				le = genAsymKey(apdu, p1);
 				break;
-	
+
 			// GET CHALLENGE
 			case (byte) 0x84:
 				le = getChallenge(apdu, lc);
 				break;
-	
+
 			// GET DATA
 			case (byte) 0xCA:
 				le = getData(p1p2);
 				break;
-	
+
 			// PUT DATA
 			case (byte) 0xDA:
 				putData(p1p2);
 				break;
-	
+
 			// DB - PUT DATA (Odd)
 			case (byte) 0xDB:
 				// Odd PUT DATA only supported for importing keys
@@ -334,19 +355,19 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 					ISOException.throwIt(SW_RECORD_NOT_FOUND);
 				}
 				break;
-				
+
 			// E6 - TERMINATE DF
 			case (byte) 0xE6:
-				if(pw1.getTriesRemaining() == 0 && pw3.getTriesRemaining() == 0) {
+				if (pw1.getTriesRemaining() == 0 && pw3.getTriesRemaining() == 0) {
 					terminated = true;
 				} else {
 					ISOException.throwIt(ISO7816.SW_CONDITIONS_NOT_SATISFIED);
 				}
 				break;
-			
+
 			// 44 - ACTIVATE FILE
 			case (byte) 0x44:
-				if(terminated == true) {
+				if (terminated == true) {
 					initialize();
 					terminated = false;
 					JCSystem.requestObjectDeletion();
@@ -354,7 +375,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 					ISOException.throwIt(ISO7816.SW_CONDITIONS_NOT_SATISFIED);
 				}
 				break;
-				
+
 			// GET VERSION (vendor specific)
 			case (byte) 0xF1:
 				le = Util.arrayCopy(VERSION, _0, buffer, _0, (short) VERSION.length);
@@ -362,32 +383,28 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 
 			// SET RETRIES (vendor specific)
 			case (byte) 0xF2:
-				if(lc != 3) {
+				if (lc != 3) {
 					ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 				}
 				short offs = ISO7816.OFFSET_CDATA;
 				setPinRetries(buf[offs++], buf[offs++], buf[offs++]);
 				break;
-	
+
 			default:
 				// good practice: If you don't know the INStruction, say so:
 				ISOException.throwIt(SW_INS_NOT_SUPPORTED);
 			}
-		}
-		catch(ISOException e) {
+		} catch(ISOException e) {
 			status = e.getReason();
-		}
-		finally {
-			if(status != (short)0x9000) {
+		} finally {
+			if (status != (short)0x9000) {
 				// Send the exception that was thrown 
 				sendException(apdu, status);
-			}
-			else {
+			} else {
 				// GET RESPONSE
 				if (ins == (byte) 0xC0) {
 					sendNext(apdu);
-				}
-				else {
+				} else {
 					sendBuffer(apdu, le);
 				}
 			}
@@ -395,20 +412,20 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 	}
 
 	private void setPinRetries(byte pin_retries, byte reset_retries, byte admin_retries) {
-		if(!pw3.isValidated()) {
+		if (!pw3.isValidated()) {
 			ISOException.throwIt(ISO7816.SW_CONDITIONS_NOT_SATISFIED);
 		}
-		if(pin_retries != 0) {
+		if (pin_retries != 0) {
 			pw1 = new OwnerPIN(pin_retries, PW1_MAX_LENGTH);
 			pw1.update(PW1_DEFAULT, _0, (byte) PW1_DEFAULT.length);
 			pw1_length = (byte) PW1_DEFAULT.length;
 			pw1_status = 0x00;
 		}
-		if(reset_retries != 0) {
+		if (reset_retries != 0) {
 			rc = new OwnerPIN(reset_retries, RC_MAX_LENGTH);
 			rc_length = 0;
 		}
-		if(admin_retries != 0) {
+		if (admin_retries != 0) {
 			pw3 = new OwnerPIN(admin_retries, PW3_MAX_LENGTH);
 			pw3.update(PW3_DEFAULT, _0, (byte) PW3_DEFAULT.length);
 			pw3_length = (byte) PW3_DEFAULT.length;
@@ -424,18 +441,17 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 	 */
 	private void commandChaining(APDU apdu) {
 		byte[] buf = apdu.getBuffer();
-		short p1p2 = Util.makeShort(buf[OFFSET_P1],
-				buf[OFFSET_P2]);
+		short p1p2 = Util.makeShort(buf[OFFSET_P1], buf[OFFSET_P2]);
 		short len = (short) (buf[OFFSET_LC] & 0xFF);
 
 		// Reset chaining if it was not yet initiated
-		if (!chain)
+		if (!chain) {
 			resetChaining();
+		}
 
 		if ((byte) (buf[OFFSET_CLA] & (byte) 0x10) == (byte) 0x10) {
 			// If chaining was already initiated, INS and P1P2 should match
-			if (chain
-					&& (buf[OFFSET_INS] != chain_ins && p1p2 != chain_p1p2)) {
+			if (chain && (buf[OFFSET_INS] != chain_ins && p1p2 != chain_p1p2)) {
 				resetChaining();
 				ISOException.throwIt(SW_CONDITIONS_NOT_SATISFIED);
 			}
@@ -444,7 +460,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 			// buffer
 			if ((short) (in_received + len) > BUFFER_MAX_LENGTH) {
 				resetChaining();
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 			}
 
 			// Store received data in buffer
@@ -465,7 +481,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 			// buffer
 			if ((short) (in_received + len) > BUFFER_MAX_LENGTH) {
 				resetChaining();
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 			}
 
 			// Add received data to the buffer
@@ -501,27 +517,30 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		if (mode == (byte) 0x81 || mode == (byte) 0x82) {
 			// Check length of input
 			if (in_received < PW1_MIN_LENGTH || in_received > PW1_MAX_LENGTH)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			// Check given PW1 and set requested mode if verified succesfully
-			if (pw1.check(buffer, _0, (byte) in_received)) {
-				if (mode == (byte) 0x81)
+			if (pw1.getTriesRemaining() == 0) {
+				ISOException.throwIt(SW_AUTHENTICATION_BLOCKED);
+			} else if (pw1.check(buffer, _0, (byte) in_received)) {
+				if (mode == (byte) 0x81) {
 					pw1_modes[PW1_MODE_NO81] = true;
-				else
+				} else {
 					pw1_modes[PW1_MODE_NO82] = true;
+				}
 			} else {
-				ISOException
-						.throwIt((short) (0x63C0 | pw1.getTriesRemaining()));
+				ISOException.throwIt(SW_SECURITY_STATUS_NOT_SATISFIED);
 			}
 		} else if (mode == (byte) 0x83) {
 			// Check length of input
 			if (in_received < PW3_MIN_LENGTH || in_received > PW3_MAX_LENGTH)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			// Check PW3
-			if (!pw3.check(buffer, _0, (byte) in_received)) {
-				ISOException
-						.throwIt((short) (0x63C0 | pw3.getTriesRemaining()));
+			if (pw3.getTriesRemaining() == 0) {
+				ISOException.throwIt(SW_AUTHENTICATION_BLOCKED);
+			} else if (!pw3.check(buffer, _0, (byte) in_received)) {
+				ISOException.throwIt(SW_SECURITY_STATUS_NOT_SATISFIED);
 			}
 		} else {
 			ISOException.throwIt(SW_INCORRECT_P1P2);
@@ -602,7 +621,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		}
 
 		if (new_length < PW1_MIN_LENGTH || new_length > PW1_MAX_LENGTH)
-			ISOException.throwIt(SW_WRONG_LENGTH);
+			ISOException.throwIt(SW_WRONG_DATA);
 
 		// Change PW1
 		JCSystem.beginTransaction();
@@ -625,23 +644,21 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 	 * @return Length of data written in buffer
 	 */
 	private short computeDigitalSignature(APDU apdu) {
-		if (!pw1.isValidated() && pw1_modes[PW1_MODE_NO81])
+		if (!(pw1.isValidated() && pw1_modes[PW1_MODE_NO81]))
 			ISOException.throwIt(SW_SECURITY_STATUS_NOT_SATISFIED);
 
 		if (pw1_status == (byte) 0x00)
 			pw1_modes[PW1_MODE_NO81] = false;
 
 		if (!sig_key.getPrivate().isInitialized())
-			ISOException.throwIt(SW_CONDITIONS_NOT_SATISFIED);
-
-		// Copy data to be signed to tmp
-		short length = Util
-				.arrayCopyNonAtomic(buffer, _0, tmp, _0, in_received);
+			ISOException.throwIt(SW_REFERENCED_DATA_NOT_FOUND);
 
 		cipher.init(sig_key.getPrivate(), Cipher.MODE_ENCRYPT);
 		increaseDSCounter();
 
-		return cipher.doFinal(tmp, _0, length, buffer, _0);
+		short length = cipher.doFinal(buffer, _0, in_received, buffer, in_received);
+		Util.arrayCopyNonAtomic(buffer, in_received, buffer, _0, length);
+		return length;
 	}
 
 	/**
@@ -656,18 +673,17 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 	 */
 	private short decipher(APDU apdu) {
 		// DECIPHER
-		if (!pw1.isValidated() && pw1_modes[PW1_MODE_NO82])
+		if (!(pw1.isValidated() && pw1_modes[PW1_MODE_NO82]))
 			ISOException.throwIt(SW_SECURITY_STATUS_NOT_SATISFIED);
 		if (!dec_key.getPrivate().isInitialized())
-			ISOException.throwIt(SW_CONDITIONS_NOT_SATISFIED);
-
-		// Copy data to be decrypted to tmp, omit padding indicator
-		short length = Util.arrayCopyNonAtomic(buffer, (short) 1, tmp, _0,
-				(short) (in_received - 1));
+			ISOException.throwIt(SW_REFERENCED_DATA_NOT_FOUND);
 
 		cipher.init(dec_key.getPrivate(), Cipher.MODE_DECRYPT);
 
-		return cipher.doFinal(tmp, _0, length, buffer, _0);
+		// Start at offset 1 to omit padding indicator byte
+		short length = cipher.doFinal(buffer, (short)1, (short) (in_received - 1), buffer, in_received);
+		Util.arrayCopyNonAtomic(buffer, in_received, buffer, _0, length);
+		return length;
 	}
 
 	/**
@@ -680,15 +696,16 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 	 * @return Length of data written in buffer
 	 */
 	private short internalAuthenticate(APDU apdu) {
-		if (!pw1.isValidated() && pw1_modes[PW1_MODE_NO82])
+		if (!(pw1.isValidated() && pw1_modes[PW1_MODE_NO82]))
 			ISOException.throwIt(SW_SECURITY_STATUS_NOT_SATISFIED);
-		Util.arrayCopyNonAtomic(buffer, _0, tmp, _0, in_received);
 
 		if (!auth_key.getPrivate().isInitialized())
-			ISOException.throwIt(SW_CONDITIONS_NOT_SATISFIED);
+			ISOException.throwIt(SW_REFERENCED_DATA_NOT_FOUND);
 
 		cipher.init(auth_key.getPrivate(), Cipher.MODE_ENCRYPT);
-		return cipher.doFinal(tmp, _0, in_received, buffer, _0);
+		short length = cipher.doFinal(buffer, _0, in_received, buffer, in_received);
+		Util.arrayCopyNonAtomic(buffer, in_received, buffer, _0, length);
+		return length;
 	}
 
 	/**
@@ -737,16 +754,16 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 	 */
 	private short getChallenge(APDU apdu, short len) {
 		if (len > CHALLENGES_MAX_LENGTH)
-			ISOException.throwIt(SW_WRONG_LENGTH);
+			ISOException.throwIt(SW_WRONG_DATA);
 
 		random.generateData(buffer, _0, len);
-		
+
 		// Set the SSC used in Secure Messaging if the size of the requested 
 		// challenge is equal to the size of the SSC
-		if(len == sm.getSSCSize()) {
+		if (len == sm.getSSCSize()) {
 			sm.setSSC(buffer, _0);
 		}
-		
+
 		return len;
 	}
 
@@ -769,7 +786,8 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 
 		// 5E - Login data
 		case (short) 0x005E:
-			return Util.arrayCopyNonAtomic(loginData, _0, buffer, _0, loginData_length);
+			return Util.arrayCopyNonAtomic(loginData, _0, buffer, _0,
+					loginData_length);
 
 		// 5F50 - URL
 		case (short) 0x5F50:
@@ -777,12 +795,11 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 
 		// 5F52 - Historical bytes
 		case (short) 0x5F52:
-			return Util.arrayCopyNonAtomic(HISTORICAL, _0, buffer, _0, (short)HISTORICAL.length);
+			return Util.arrayCopyNonAtomic(HISTORICAL, _0, buffer, _0,
+					(short)HISTORICAL.length);
 
 		// 65 - Cardholder Related Data
 		case (short) 0x0065:
-			buffer[offset++] = 0x65;
-			buffer[offset++] = 0x00;
 
 			// 5B - Name
 			buffer[offset++] = 0x5B;
@@ -803,17 +820,10 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 			buffer[offset++] = 0x01;
 			buffer[offset++] = sex;
 
-			// Set length for combined data
-			buffer[1] = (byte) (offset - 2);
-
 			return offset;
 
 		// 6E - Application Related Data
 		case (short) 0x006E:
-			buffer[offset++] = 0x6E;
-			// Total length assumed to be >= 128 and < 256
-			buffer[offset++] = (byte) 0x81;
-			buffer[offset++] = 0;
 
 			// 4F - AID
 			buffer[offset++] = 0x4F;
@@ -830,7 +840,9 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 
 			// 73 - Discretionary data objects
 			buffer[offset++] = 0x73;
-			buffer[offset++] = 0x00;
+			buffer[offset++] = (byte)0x81; // This field's length will exceed 127 bytes
+			short ddoLengthOffset = offset;
+			buffer[offset++] = 0x00; // Placeholder for length byte
 
 			// C0 - Extended capabilities
 			buffer[offset++] = (byte) 0xC0;
@@ -888,15 +900,12 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 			offset = dec_key.getTime(buffer, offset);
 			offset = auth_key.getTime(buffer, offset);
 
-			// Set length of combined data
-			buffer[2] = (byte) (offset - 3);
-
+			// Set length of combined discretionary data objects
+			buffer[ddoLengthOffset] = (byte) (offset - ddoLengthOffset - 1);
 			return offset;
 
 		// 7A - Security support template
 		case (short) 0x007A:
-			buffer[offset++] = 0x7A;
-			buffer[offset++] = (byte) 0x05;
 
 			// 93 - Digital signature counter
 			buffer[offset++] = (byte) 0x93;
@@ -908,22 +917,8 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 
 		// 7F21 - Cardholder Certificate
 		case (short) 0x7F21:
-			// Use buffer since certificate may be longer than
-			// RESPONSE_MAX_LENGTH
-			buffer[offset++] = 0x7F;
-			buffer[offset++] = 0x21;
 
-			if (cert_length < 128) {
-				buffer[offset++] = (byte) cert_length;
-			} else if (cert_length < 256) {
-				buffer[offset++] = (byte) 0x81;
-				buffer[offset++] = (byte) cert_length;
-			} else {
-				buffer[offset++] = (byte) 0x82;
-				offset = Util.setShort(buffer, offset, cert_length);
-			}
-
-			if(cert_length > 0) {
+			if (cert_length > 0) {
 				offset = Util.arrayCopyNonAtomic(cert, _0, buffer, offset,
 						cert_length);
 			}
@@ -941,6 +936,28 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 			buffer[offset++] = pw3.getTriesRemaining();
 
 			return offset;
+		// 0101 - Private Use DO 1
+		case (short) 0x0101:
+			return Util.arrayCopyNonAtomic(private_use_do_1, _0, buffer, _0, private_use_do_1_length);
+
+		// 0102 - Private Use DO 2
+		case (short) 0x0102:
+			return Util.arrayCopyNonAtomic(private_use_do_2, _0, buffer, _0, private_use_do_2_length);
+
+		// 0103 - Private Use DO 3
+		case (short) 0x0103:
+			// For private use DO 3, PW1 must be verified with mode 82 to read
+			if (!(pw1.isValidated() && pw1_modes[PW1_MODE_NO82]))
+				ISOException.throwIt(SW_SECURITY_STATUS_NOT_SATISFIED);
+		return Util.arrayCopyNonAtomic(private_use_do_3, _0, buffer, _0, private_use_do_3_length);
+
+		// 0104 - Private Use DO 4
+		case (short) 0x0104:
+			// For private use DO 4, PW3 must be verified to read
+			if (!pw3.isValidated())
+				ISOException.throwIt(SW_SECURITY_STATUS_NOT_SATISFIED);
+		return Util.arrayCopyNonAtomic(private_use_do_4, _0, buffer, _0, private_use_do_4_length);
+
 
 		default:
 			ISOException.throwIt(SW_RECORD_NOT_FOUND);
@@ -961,6 +978,34 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 	 *            Tag of the requested data
 	 */
 	private void putData(short tag) {
+		if(tag == 0x0101 || tag == 0x0103) {
+			// Special case for private use DO's 1 and 3: these can be written if
+			// PW1 is verified with mode 82. All others require PW3 verification.
+			if (!(pw1.isValidated() && pw1_modes[PW1_MODE_NO82]))
+				ISOException.throwIt(SW_SECURITY_STATUS_NOT_SATISFIED);
+			if (in_received > PRIVATE_DO_MAX_LENGTH)
+				ISOException.throwIt(SW_WRONG_LENGTH);
+
+			switch (tag) {
+			// 0101 - Private Use DO 1
+			case 0x0101:
+				JCSystem.beginTransaction();
+				private_use_do_1_length = in_received;
+				Util.arrayCopy(buffer, _0, private_use_do_1, _0, in_received);
+				JCSystem.commitTransaction();
+				break;
+
+			// 0103 - Private Use DO 3
+			case 0x0103:
+				JCSystem.beginTransaction();
+				private_use_do_3_length = in_received;
+				Util.arrayCopy(buffer, _0, private_use_do_3, _0, in_received);
+				JCSystem.commitTransaction();
+				break;
+			}
+			return;
+		}
+
 		if (!pw3.isValidated())
 			ISOException.throwIt(SW_SECURITY_STATUS_NOT_SATISFIED);
 
@@ -968,7 +1013,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		// 5B - Name
 		case (short) 0x005B:
 			if (in_received > name.length)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			JCSystem.beginTransaction();
 			name_length = Util.arrayCopy(buffer, _0, name, _0, in_received);
@@ -978,7 +1023,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		// 5E - Login data
 		case (short) 0x005E:
 			if (in_received > loginData.length)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			JCSystem.beginTransaction();
 			loginData_length = Util.arrayCopy(buffer, _0, loginData, _0,
@@ -989,7 +1034,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		// 5F2D - Language preferences
 		case (short) 0x5F2D:
 			if (in_received > lang.length)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			JCSystem.beginTransaction();
 			lang_length = Util.arrayCopy(buffer, _0, lang, _0, in_received);
@@ -999,7 +1044,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		// 5F35 - Sex
 		case (short) 0x5F35:
 			if (in_received != 1)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			// Check for valid values
 			if (buffer[0] != (byte) 0x31 && buffer[0] != (byte) 0x32
@@ -1012,7 +1057,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		// 5F50 - URL
 		case (short) 0x5F50:
 			if (in_received > url.length)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			JCSystem.beginTransaction();
 			url_length = Util.arrayCopy(buffer, _0, url, _0, in_received);
@@ -1022,9 +1067,9 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		// 7F21 - Cardholder certificate
 		case (short) 0x7F21:
 			if (in_received > CERT_MAX_LENGTH)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
-			if(cert == null) {
+			if (cert == null) {
 				cert = new byte[CERT_MAX_LENGTH];
 			}
 			cert_length = Util.arrayCopyNonAtomic(buffer, _0, cert, _0, in_received);
@@ -1033,7 +1078,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		// C4 - PW Status Bytes
 		case (short) 0x00C4:
 			if (in_received != 1)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			// Check for valid values
 			if (buffer[0] != (byte) 0x00 && buffer[0] != (byte) 0x01)
@@ -1045,7 +1090,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		// C7 - Fingerprint signature key
 		case (short) 0x00C7:
 			if (in_received != PGPKey.FP_SIZE)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			sig_key.setFingerprint(buffer, _0);
 			break;
@@ -1053,7 +1098,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		// C8 - Fingerprint decryption key
 		case (short) 0x00C8:
 			if (in_received != PGPKey.FP_SIZE)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			dec_key.setFingerprint(buffer, _0);
 			break;
@@ -1061,7 +1106,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		// C9 - Fingerprint authentication key
 		case (short) 0x00C9:
 			if (in_received != PGPKey.FP_SIZE)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			auth_key.setFingerprint(buffer, _0);
 			break;
@@ -1069,7 +1114,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		// CA - Fingerprint Certification Authority 1
 		case (short) 0x00CA:
 			if (in_received != FP_LENGTH)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			Util.arrayCopy(buffer, _0, ca1_fp, _0, in_received);
 			break;
@@ -1077,7 +1122,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		// CB - Fingerprint Certification Authority 2
 		case (short) 0x00CB:
 			if (in_received != FP_LENGTH)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			Util.arrayCopy(buffer, _0, ca2_fp, _0, in_received);
 			break;
@@ -1085,7 +1130,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		// CC - Fingerprint Certification Authority 3
 		case (short) 0x00CC:
 			if (in_received != FP_LENGTH)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			Util.arrayCopy(buffer, _0, ca3_fp, _0, in_received);
 			break;
@@ -1093,7 +1138,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		// CE - Signature key generation date/time
 		case (short) 0x00CE:
 			if (in_received != 4)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			sig_key.setTime(buffer, _0);
 			break;
@@ -1101,7 +1146,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		// CF - Decryption key generation date/time
 		case (short) 0x00CF:
 			if (in_received != 4)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			dec_key.setTime(buffer, _0);
 			break;
@@ -1109,7 +1154,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		// D0 - Authentication key generation date/time
 		case (short) 0x00D0:
 			if (in_received != 4)
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 
 			auth_key.setTime(buffer, _0);
 			break;
@@ -1126,7 +1171,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 				rc.resetAndUnblock();
 				JCSystem.commitTransaction();
 			} else {
-				ISOException.throwIt(SW_WRONG_LENGTH);
+				ISOException.throwIt(SW_WRONG_DATA);
 			}
 			break;
 
@@ -1145,20 +1190,40 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 			short offset = 0;
 			short key_len = 0; 
 			// Set encryption key
-			if(buffer[offset++] == (byte)0xD1) {
+			if (buffer[offset++] == (byte)0xD1) {
 				key_len = (short)(buffer[offset++] & 0x7F);
 				sm.setSessionKeyEncryption(buffer, offset);
 				offset += key_len;
 			}
 
 			// Set MAC key			
-			if(buffer[offset++] == (byte)0xD2) {
+			if (buffer[offset++] == (byte)0xD2) {
 				key_len = (short)(buffer[offset++] & 0x7F);
 				sm.setSessionKeyMAC(buffer, offset);
 				offset += key_len;
 			}
 			break;
-			
+
+		// 0102 - Private Use DO 2
+		case 0x0102:
+			if (in_received > PRIVATE_DO_MAX_LENGTH)
+				ISOException.throwIt(SW_WRONG_LENGTH);
+			JCSystem.beginTransaction();
+			private_use_do_2_length = in_received;
+			Util.arrayCopy(buffer, _0, private_use_do_2, _0, in_received);
+			JCSystem.commitTransaction();
+			break;
+
+		// 0104 - Private Use DO 4
+		case 0x0104:
+			if (in_received > PRIVATE_DO_MAX_LENGTH)
+				ISOException.throwIt(SW_WRONG_LENGTH);
+			JCSystem.beginTransaction();
+			private_use_do_4_length = in_received;
+			Util.arrayCopy(buffer, _0, private_use_do_4, _0, in_received);
+			JCSystem.commitTransaction();
+			break;
+
 		default:
 			ISOException.throwIt(SW_RECORD_NOT_FOUND);
 			break;
@@ -1230,7 +1295,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		if (buffer[offset++] != (byte) 0x97)
 			ISOException.throwIt(SW_DATA_INVALID);
 		short len_modulus = getLength(buffer, offset);
-		offset += getLengthBytes(len_dq1);
+		offset += getLengthBytes(len_modulus);
 
 		if (buffer[offset_data++] != 0x5F || buffer[offset_data++] != 0x48)
 			ISOException.throwIt(SW_DATA_INVALID);
@@ -1268,45 +1333,36 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 	private short sendPublicKey(PGPKey key) {
 		RSAPublicKey pubkey = key.getPublic();
 
-		// Build message in tmp
+		// Build message in buffer
 		short offset = 0;
-
-		// 81 - Modulus
-		tmp[offset++] = (byte) 0x81;
-
-		// Length of modulus is always greater than 128 bytes
-		if (key.getModulusLength() < 256) {
-			tmp[offset++] = (byte) 0x81;
-			tmp[offset++] = (byte) key.getModulusLength();
-		} else {
-			tmp[offset++] = (byte) 0x82;
-			offset = Util.setShort(tmp, offset, key.getModulusLength());
-		}
-		pubkey.getModulus(tmp, offset);
-		offset += key.getModulusLength();
-
-		// 82 - Exponent
-		tmp[offset++] = (byte) 0x82;
-		tmp[offset++] = (byte) key.getExponentLength();
-		pubkey.getExponent(tmp, offset);
-		offset += key.getExponentLength();
-
-		short len = offset;
-
-		offset = 0;
 
 		buffer[offset++] = 0x7F;
 		buffer[offset++] = 0x49;
+		buffer[offset++] = (byte) 0x82;
+		short offsetForLength = offset;
+		offset += 2;
 
-		if (len < 256) {
+		// 81 - Modulus
+		buffer[offset++] = (byte) 0x81;
+
+		// Length of modulus is always greater than 128 bytes
+		if (key.getModulusLength() < 256) {
 			buffer[offset++] = (byte) 0x81;
-			buffer[offset++] = (byte) len;
+			buffer[offset++] = (byte) key.getModulusLength();
 		} else {
 			buffer[offset++] = (byte) 0x82;
-			offset = Util.setShort(buffer, offset, len);
+			offset = Util.setShort(buffer, offset, key.getModulusLength());
 		}
+		pubkey.getModulus(buffer, offset);
+		offset += key.getModulusLength();
 
-		offset = Util.arrayCopyNonAtomic(tmp, _0, buffer, offset, len);
+		// 82 - Exponent
+		buffer[offset++] = (byte) 0x82;
+		buffer[offset++] = (byte) key.getExponentLength();
+		pubkey.getExponent(buffer, offset);
+		offset += key.getExponentLength();
+
+		Util.setShort(buffer, offsetForLength, (short)(offset - offsetForLength - 2));
 
 		return offset;
 	}
@@ -1358,21 +1414,19 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		
 		// Determine maximum size of the messages
 		short max_length;
-		if(sm_success) {
+		if (sm_success) {
 			max_length = RESPONSE_SM_MAX_LENGTH;
-		}
-		else {
+		} else {
 			max_length = RESPONSE_MAX_LENGTH;
 		}
 		
-		if(max_length > out_left) {
+		if (max_length > out_left) {
 			max_length = out_left;
 		}
 
 		Util.arrayCopyNonAtomic(buffer, out_sent, buf, _0, max_length);
 
 		short len = 0;
-		
 		if (out_left > max_length) {
 			len = max_length;
 			
@@ -1386,17 +1440,16 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 			} else {
 				status = (short) (SW_BYTES_REMAINING_00 | out_left);
 			}
-		}
-		else {
+		} else {
 			len = out_left;
-			
+
 			// Reset buffer
 			out_sent = 0;
 			out_left = 0;			
 		}
 		
 		// If SM is used, wrap response
-		if(sm_success) {
+		if (sm_success) {
 			len = sm.wrapResponseAPDU(buf, _0, len, status);
 		}
 				
@@ -1405,7 +1458,7 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 		apdu.sendBytes(_0, len);
 
 		// Send status word
-		if(status != SW_NO_ERROR)
+		if (status != SW_NO_ERROR)
 			ISOException.throwIt(status);
 	}
 
@@ -1443,12 +1496,13 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 	 * @return Number of bytes needed to represent length
 	 */
 	private short getLengthBytes(short length) {
-		if (length <= 127)
+		if (length <= 127) {
 			return 1;
-		else if (length <= 255)
+		} else if (length <= 255) {
 			return 2;
-		else
+		} else {
 			return 3;
+		}
 	}
 
 	/**
@@ -1462,14 +1516,15 @@ public class OpenPGPApplet extends Applet implements ISO7816 {
 	private PGPKey getKey(byte type) {
 		PGPKey key = sig_key;
 
-		if (type == (byte) 0xB6)
+		if (type == (byte) 0xB6) {
 			key = sig_key;
-		else if (type == (byte) 0xB8)
+		} else if (type == (byte) 0xB8) {
 			key = dec_key;
-		else if (type == (byte) 0xA4)
+		} else if (type == (byte) 0xA4) {
 			key = auth_key;
-		else
+		} else {
 			ISOException.throwIt(SW_UNKNOWN);
+		}
 
 		return key;
 	}

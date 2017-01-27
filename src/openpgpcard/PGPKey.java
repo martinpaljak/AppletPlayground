@@ -1,6 +1,6 @@
 /**
  * Java Card implementation of the OpenPGP card
- * Copyright (C) 2011  Joeri de Ruiter
+ * Copyright (C) 2011  Joeri de Ruiter <joeri@cs.ru.nl>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,14 +21,10 @@ package openpgpcard;
 import javacard.framework.*;
 import javacard.security.*;
 
-/**
- * @author Joeri de Ruiter (joeri@cs.ru.nl)
- * @version $Revision: 12 $ by $Author: joeridr $
- *          $LastChangedDate: 2012-02-23 15:31:33 +0100 (tor, 23 feb 2012) $
- */
 public class PGPKey implements ISO7816 {
 	public static final short KEY_SIZE = 2048;// 2368;
 	public static final short KEY_SIZE_BYTES = KEY_SIZE / 8;
+	public static final short COMPONENT_BYTES = KEY_SIZE_BYTES / 2;
 	public static final short EXPONENT_SIZE = 17;
 	public static final short EXPONENT_SIZE_BYTES = 3;
 	public static final short FP_SIZE = 20;
@@ -37,6 +33,7 @@ public class PGPKey implements ISO7816 {
 	private byte[] fp;
 	private byte[] time = { 0x00, 0x00, 0x00, 0x00 };
 	private byte[] attributes = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x03 };
+	private static byte[] tmpBuf;
 
 	public PGPKey() {
 		key = new KeyPair(KeyPair.ALG_RSA_CRT, KEY_SIZE);
@@ -46,6 +43,10 @@ public class PGPKey implements ISO7816 {
 
 		Util.setShort(attributes, (short) 1, KEY_SIZE);
 		Util.setShort(attributes, (short) 3, EXPONENT_SIZE);
+
+		if(tmpBuf == null) {
+			tmpBuf = JCSystem.makeTransientByteArray((short) (KEY_SIZE_BYTES / 2), JCSystem.CLEAR_ON_DESELECT);
+		}
 	}
 
 	/**
@@ -172,7 +173,9 @@ public class PGPKey implements ISO7816 {
 	 *            The length of the parameter
 	 */
 	public void setDP1(byte[] buffer, short offset, short length) {
-		((RSAPrivateCrtKey) key.getPrivate()).setDP1(buffer, offset, length);
+		Util.arrayFillNonAtomic(tmpBuf, (short) 0, (short) tmpBuf.length, (byte) 0);
+		Util.arrayCopyNonAtomic(buffer, offset, tmpBuf, (short) (COMPONENT_BYTES - length), length);
+		((RSAPrivateCrtKey) key.getPrivate()).setDP1(tmpBuf, (short) 0, COMPONENT_BYTES);
 	}
 
 	/**
@@ -190,7 +193,9 @@ public class PGPKey implements ISO7816 {
 	 *            The length of the parameter
 	 */
 	public void setDQ1(byte[] buffer, short offset, short length) {
-		((RSAPrivateCrtKey) key.getPrivate()).setDQ1(buffer, offset, length);
+		Util.arrayFillNonAtomic(tmpBuf, (short) 0, (short) tmpBuf.length, (byte) 0);
+		Util.arrayCopyNonAtomic(buffer, offset, tmpBuf, (short) (COMPONENT_BYTES - length), length);
+		((RSAPrivateCrtKey) key.getPrivate()).setDQ1(tmpBuf, (short) 0, COMPONENT_BYTES);
 	}
 
 	/**
@@ -226,7 +231,9 @@ public class PGPKey implements ISO7816 {
 	 *            The length of the parameter
 	 */
 	public void setPQ(byte[] buffer, short offset, short length) {
-		((RSAPrivateCrtKey) key.getPrivate()).setPQ(buffer, offset, length);
+		Util.arrayFillNonAtomic(tmpBuf, (short) 0, (short) tmpBuf.length, (byte) 0);
+		Util.arrayCopyNonAtomic(buffer, offset, tmpBuf, (short) (COMPONENT_BYTES - length), length);
+		((RSAPrivateCrtKey) key.getPrivate()).setPQ(tmpBuf, (short) 0, COMPONENT_BYTES);
 	}
 
 	/**

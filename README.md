@@ -28,7 +28,7 @@ It includes various open source applets from the internet, bundled into ready to
  * PLAID - [DHS Reference Implementation](http://www.humanservices.gov.au/corporate/publications-and-resources/plaid/reference-implementation-dhs) ([License](http://www.humanservices.gov.au/corporate/publications-and-resources/plaid/licence-terms))
  * AlgTest
  * readertest - [r3223](https://anonscm.debian.org/viewvc/pcsclite/trunk/HandlerTest/JavaCard/src/org/debian/alioth/pcsclite/readertest/readertest.java?view=markup&pathrev=3223)
- * javacard-ndef - [promovicz/javacard-ndef](https://github.com/promovicz/javacard-ndef) (GPL)
+ * javacard-ndef - [promovicz/javacard-ndef@e3b271d](https://github.com/promovicz/javacard-ndef) (GPL)
 
 Note: applets marked with * have obvious blocking errors (missing casts from int to short for 2.2.X target) removed from source.
 

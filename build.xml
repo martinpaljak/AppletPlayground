@@ -85,6 +85,10 @@
       <cap output="GidsApplet.cap" sources="src/com/mysmartlogon/gidsApplet" aid="A00000039742544659" version="1.0">
         <applet class="com.mysmartlogon.gidsApplet.GidsApplet" aid="A000000397425446590201"/>
       </cap>
+      <!-- SatoChipApplet -->
+      <cap output="SatoChipApplet.cap" sources="src/org/satochip" aid="5361746f43686970">
+        <applet class="org.satochip.applet.CardEdge" aid="5361746f4368697000"/>
+      </cap>
     </javacard>
   </target>
 </project>

@@ -1,11 +1,10 @@
-Applet Playground
-=================
+# Applet Playground [![Build Status](https://travis-ci.org/martinpaljak/AppletPlayground.svg?branch=master)](https://travis-ci.org/martinpaljak/AppletPlayground)
 
-AppletPlayground is an easy method for getting to know JavaCard development by learning from open source software.
+AppletPlayground is an educational repository for getting to know JavaCard development by learning from existing open source software.
 
 It includes various open source applets from the internet, bundled into ready to use package. Everything you need to edit, compile and load the applets to real JavaCard-s or test with an emulator.
 
-[![Build Status](https://travis-ci.org/martinpaljak/AppletPlayground.svg?branch=master)](https://travis-ci.org/martinpaljak/AppletPlayground)
+
 
 ## Time to experiment!
 ![Experiments!](http://www.freevector.com/site_media/preview_images/FreeVector-Evil-Doctor.jpg)
@@ -35,7 +34,7 @@ It includes various open source applets from the internet, bundled into ready to
 Note: applets marked with * have obvious blocking errors (missing casts from int to short for 2.2.X target) removed from source.
 
 # FEASIBILITY NOTICE
-The above applets and the overall package come "AS-IS". I make no claims about the feasibility, usability, security, correctness whatsoever of the whole package or any of the components. Use at your own risk. Everything here is only for educational purposes.
+The above applets and the overall package comes "AS-IS". I make no claims about the feasibility, usability, security, correctness whatsoever of the whole package or any of the components. Use at your own risk. Everything here is only for educational purposes.
 
 ## What you need ?
  * Preferrably a Unix-like operating system like a recent Linux or OS X with installed JDK 1.7+ (but works also with Windows)
@@ -53,17 +52,13 @@ The above applets and the overall package come "AS-IS". I make no claims about t
 
 ## How to use
  * Import this project from Git (or directly into Eclipse) and execute the "toys" ANT target.
- * Or use command line and issue ```ant toys```
+ * Or use command line and issue `ant`
  * Use the included [GlobalPlatform utility](https://github.com/martinpaljak/GlobalPlatform#usage) to load any of the generated applets (```.cap``` files) to a card
-
-
-## Similar projects
- * https://minotaur.fi.muni.cz:8443/~xsvenda/docuwiki/doku.php?id=public:smartcard:javacardcompilation
-
 
 ## In the pipeline:
  * Automatic code hardening with http://sourceforge.net/projects/cesta/ (BSD)
  * Automatic card simulation with [vJCRE](https://github.com/martinpaljak/vJCRE#import-projavacardvre) (MIT/GPL)
+ * Automatic card simulation with [jcardsim](http://jcardsim.org)
 
 ## Contact
  * martin@martinpaljak.net

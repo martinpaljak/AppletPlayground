@@ -20,7 +20,7 @@ It includes various open source applets from the internet, bundled into ready to
  * PassportApplet - http://sourceforge.net/p/jmrtd/code/HEAD/tree/trunk/passportapplet/ (LGPL3)
  * BTChip* - [LedgerHQ/btchipJC](https://github.com/LedgerHQ/btchipJC) (AGPL3)
  * NDEF - [slomo/ndef-javacard](https://github.com/slomo/ndef-javacard) (DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE :))
- * BeID* - [r62](https://code.google.com/p/eid-quick-key-toolset) (LGPL)
+ * BeID* - [r62](https://github.com/earvinjamesmarzo/eid-quick-key-toolset) (LGPL)
  * OpenEMV - [r3](svn://svn.code.sf.net/p/openemv/code/trunk) from svn://svn.code.sf.net/p/openemv/code/trunk (LGPL2)
  * ISOApplet - [philipWendland/IsoApplet](https://github.com/philipWendland/IsoApplet) (GPL3)
  * DriversLicense* [r175](svn://svn.code.sf.net/p/isodl/code/) from svn://svn.code.sf.net/p/isodl/code/ (LGPL2)

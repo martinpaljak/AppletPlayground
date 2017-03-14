@@ -30,6 +30,7 @@ It includes various open source applets from the internet, bundled into ready to
  * javacard-ndef - [promovicz/javacard-ndef@e3b271d](https://github.com/promovicz/javacard-ndef) (GPL)
  * GidsApplet [vletoux/GidsApplet@f467573](https://github.com/vletoux/GidsApplet) (GPL3)
  * SatoChipApplet [Toporin/SatoChipApplet@0f34d40](https://github.com/Toporin/SatoChipApplet) (AGPL3)
+ * HelloWorldApplet [licel/jcardsim@70294c3d48acccd419d6858d824c63bdbd14a355](https://github.com/licel/jcardsim/blob/70294c3d48acccd419d6858d824c63bdbd14a355/src/main/java/com/licel/jcardsim/samples/HelloWorldApplet.java) (Apache 2.0)
 
 Note: applets marked with * have obvious blocking errors (missing casts from int to short for 2.2.X target) removed from source.
 

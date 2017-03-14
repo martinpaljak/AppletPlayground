@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="toys" name="AppletPlayground build">
   <!-- Applet building dependencies -->
+  <property name="JC221" value="ext/java_card_kit-2_2_1"/>
   <property name="JC222" value="ext/java_card_kit-2_2_2"/>
   <property name="JC303" value="ext/java_card_kit-3_0_3"/>
   <property name="OP20" value="ext/visa_openplatform-2_0"/>
@@ -10,6 +11,12 @@
   <taskdef name="javacard" classname="pro.javacard.ant.JavaCard" classpath="ext/ant-javacard.jar"/>
   <!-- All included applets -->
   <target name="toys">
+    <javacard jckit="${JC221}">
+      <!-- HelloWorldApplet -->
+      <cap output="HelloWorldApplet.cap" sources="src/com/licel/jcardsim/samples" aid="A0:00:00:00:19:FF">
+        <applet class="com.licel.jcardsim.samples.HelloWorldApplet" aid="A0:00:00:00:19:FF:01"/>
+      </cap>
+    </javacard>
     <javacard jckit="${JC222}">
       <!-- MuscleApplet -->
       <cap output="MuscleApplet.cap" sources="src/com/musclecard">
